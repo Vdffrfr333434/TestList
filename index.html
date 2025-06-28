@@ -16,7 +16,7 @@
     overflow-x: hidden;
   }
 
-  .center {
+  .center, #question-block, #result-blocks {
     background: #333;
     border: 1px solid #58a6ff;
     border-radius: 15px;
@@ -25,7 +25,9 @@
     width: 75vw;
     text-align: center;
     user-select: none;
-    margin: 40px auto;
+    margin: calc(25vw) auto 40px auto; /* отступ сверху 25% ширины + снизу 40px */
+    opacity: 1;
+    transition: opacity 0.4s ease;
   }
 
   h1, h2, h3 {
@@ -52,7 +54,7 @@
 
   #disclaimer-modal {
     max-width: 500px;
-    margin: 40px auto;
+    margin: calc(25vw) auto 40px auto;
     background: #222;
     padding: 30px;
     border-radius: 15px;
@@ -68,7 +70,7 @@
     border-radius: 15px;
     border: 1px solid #58a6ff;
     padding: 25px 30px;
-    margin: 40px auto;
+    margin: calc(25vw) auto 40px auto;
     user-select: none;
   }
 
@@ -104,7 +106,7 @@
   #result-blocks {
     max-width: 600px;
     width: 75vw;
-    margin: 40px auto;
+    margin: calc(25vw) auto 40px auto;
     background: #333;
     border-radius: 15px;
     border: 1px solid #58a6ff;
@@ -142,6 +144,23 @@
     background: rgba(88,166,255,0.25);
   }
 
+  /* Ошибка под формой */
+  #error-msg {
+    color: #ff6b6b;
+    margin-top: 10px;
+    font-size: 0.95rem;
+    display: none;
+    user-select: none;
+  }
+
+  /* Лоадер-переход */
+  .fade-out {
+    opacity: 0 !important;
+  }
+  .fade-in {
+    opacity: 1 !important;
+  }
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
@@ -153,6 +172,7 @@
   <input type="text" id="username" placeholder="Имя" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #58a6ff;" />
   <input type="text" id="contact" placeholder="Контакт для связи" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #58a6ff;" />
   <button class="btn" id="start-btn">Начать тестирование</button>
+  <div id="error-msg"></div>
 </div>
 
 <!-- Слайд 2: Дисклеймер -->
@@ -192,6 +212,8 @@
 
   const resultsContainer = document.getElementById('results-container');
   const downloadPdfBtn = document.getElementById('download-pdf-btn');
+
+  const errorMsg = document.getElementById('error-msg');
 
   // Вопросы и ответы
   const questions = [
@@ -252,9 +274,26 @@
   let currentQuestionIndex = 0;
   let scores = {};
 
-  function showQuestion(index) {
+  function fadeOut(element) {
+    return new Promise(resolve => {
+      element.classList.add('fade-out');
+      element.classList.remove('fade-in');
+      setTimeout(() => resolve(), 400);
+    });
+  }
+  function fadeIn(element) {
+    return new Promise(resolve => {
+      element.classList.add('fade-in');
+      element.classList.remove('fade-out');
+      setTimeout(() => resolve(), 400);
+    });
+  }
+
+  async function showQuestion(index) {
     if (index >= questions.length) {
+      await fadeOut(questionBlock);
       showResults();
+      await fadeIn(resultBlocks);
       return;
     }
     const q = questions[index];
@@ -266,12 +305,14 @@
       const btn = document.createElement('button');
       btn.className = 'answer-btn';
       btn.textContent = ans.text;
-      btn.onclick = () => {
+      btn.onclick = async () => {
         if (!scores[q.category]) scores[q.category] = 0;
         scores[q.category] += ans.points;
 
+        await fadeOut(questionBlock);
         currentQuestionIndex++;
         showQuestion(currentQuestionIndex);
+        await fadeIn(questionBlock);
       };
       answersContainer.appendChild(btn);
     });
@@ -308,38 +349,51 @@
     }
   }
 
-  startBtn.addEventListener('click', () => {
+  async function fadeSwap(hideElem, showElem) {
+    await fadeOut(hideElem);
+    hideElem.style.display = 'none';
+    showElem.style.display = 'block';
+    await fadeIn(showElem);
+  }
+
+  startBtn.addEventListener('click', async () => {
+    errorMsg.style.display = 'none';
     const username = document.getElementById('username').value.trim();
     const contact = document.getElementById('contact').value.trim();
     if (!username || !contact) {
-      alert('Пожалуйста, заполните имя и контакт для связи');
+      errorMsg.textContent = 'Пожалуйста, заполните имя и контакт для связи';
+      errorMsg.style.display = 'block';
       return;
     }
-    slide1.style.display = 'none';
-    slide2.style.display = 'block';
+    await fadeSwap(slide1, slide2);
   });
 
-  cancelBtn.addEventListener('click', () => {
-    slide2.style.display = 'none';
-    slide1.style.display = 'block';
+  cancelBtn.addEventListener('click', async () => {
+    errorMsg.style.display = 'none';
+    await fadeSwap(slide2, slide1);
   });
 
-  agreeBtn.addEventListener('click', () => {
-    slide2.style.display = 'none';
-    questionBlock.style.display = 'block';
+  agreeBtn.addEventListener('click', async () => {
+    errorMsg.style.display = 'none';
+    await fadeSwap(slide2, questionBlock);
     currentQuestionIndex = 0;
     scores = {};
     showQuestion(currentQuestionIndex);
   });
 
   downloadPdfBtn.addEventListener('click', () => {
+    // Скрываем кнопку перед генерацией PDF
+    downloadPdfBtn.style.display = 'none';
     const element = document.getElementById('result-blocks');
     html2pdf().from(element).set({
       margin: 0.5,
       filename: 'MSE_results.pdf',
       html2canvas: { scale: 2 },
       jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-    }).save();
+    }).save().finally(() => {
+      // Возвращаем кнопку после сохранения
+      downloadPdfBtn.style.display = 'block';
+    });
   });
 </script>
 
