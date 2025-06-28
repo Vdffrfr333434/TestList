@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>MSE Опросник с Категориями и Баллами</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Roboto+Slab:wght@400;700&display=swap');
 
   html, body {
     margin:0; padding:0; height:100%;
@@ -61,21 +61,30 @@
   }
 
   #result-page {
+    position: relative;
     text-align: left;
-    background: rgba(40,40,40,0.35);
-    padding: 20px 25px;
+    background-image: url('https://via.placeholder.com/800x1200');
+    background-size: cover;
+    background-position: center;
+    padding: 80px 30px 30px 30px;
     border-radius: 15px;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    font-family: 'Roboto Slab', serif;
+    width: 90vw;
+    max-width: 800px;
+    color: #fff;
+  }
+
+  #result-page .interpret-block {
+    position: relative;
+    margin-bottom: 60px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
   }
 
   #result-page h2 {
     text-align: center;
-    margin-bottom: 15px;
-  }
-
-  #answer-list p {
-    margin: 10px 0;
+    margin-bottom: 30px;
   }
 
   button#download-pdf-btn {
@@ -94,7 +103,6 @@
     background: rgba(255,255,255,0.45);
   }
 
-  /* Лоадбар */
   #loader-container {
     margin-top: 30px;
     width: 100%;
@@ -110,32 +118,10 @@
     transition: width 0.4s ease;
   }
 
-  #disclaimer-modal {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-  #disclaimer-box {
-    background: rgba(32,32,32,0.95);
-    padding: 30px;
-    border-radius: 15px;
-    width: 90%;
-    max-width: 400px;
-    text-align: center;
-  }
-  #disclaimer-box p {
-    margin-bottom: 20px;
-  }
-
-  /* Адаптивность */
   @media(max-width: 600px) {
     .center {
       width: 90vw;
-      padding: 20px 20px;
+      padding: 20px;
     }
     .btn {
       padding: 14px;
@@ -146,70 +132,40 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
-  <div class="center" id="app">
-    <!-- Контент подгружается через JS -->
-  </div>
-  <div id="disclaimer-modal" style="display:none;">
-    <div id="disclaimer-box">
-      <p>Ваши данные будут обработаны с помощью искусственного интеллекта.</p>
-      <button id="accept-disclaimer" class="btn">Продолжить тестирование</button>
-      <button id="cancel-disclaimer" class="btn">Отменить</button>
-    </div>
-  </div>
+<div class="center" id="app"></div>
 <script>
 (() => {
   const app = document.getElementById('app');
-  const disclaimerModal = document.getElementById('disclaimer-modal');
 
   let username = '';
   let contact = '';
   const answers = [];
 
-  // Структура вопросов с категориями (распределены случайно)
   const questions = [
-    { category: 'Метаболизм', question: 'Что ты делаешь сразу после пробуждения', options: [
-      { text: 'Проверяю сообщения', score: 3 },
-      { text: 'Завтракаю', score: 4 },
-      { text: 'Пью воду/кофе, но не ем', score: 2 },
-      { text: 'Направляюсь в уборную', score: 5 },
-      { text: 'Делаю зарядку', score: 1 } ] },
-    { category: 'Когнитивные способности', question: 'Первый приём пищи у тебя', options: [
-      { text: 'Завтрак дома', score: 5 },
-      { text: 'Завтрак вне дома', score: 3 },
-      { text: 'Обед вне дома', score: 2 },
-      { text: 'По ситуации', score: 1 } ] },
-    { category: 'Термогенез', question: 'Долгое время без еды я:', options: [
-      { text: 'Переношу без проблем', score: 5 },
-      { text: 'Чувствую голод', score: 3 },
-      { text: 'Не чувствую голод', score: 2 },
-      { text: 'Чувствую сильный дискомфорт', score: 1 } ] },
-    { category: 'Энергообмен', question: 'После еды я:', options: [
-      { text: 'Ощущаю прилив сил и энергии', score: 5 },
-      { text: 'Хочу полежать, переварить еду', score: 3 },
-      { text: 'Хочу походить, переварить еду', score: 4 },
-      { text: 'Хочу спать', score: 1 },
-      { text: 'Ощущаю жар', score: 2 } ] },
-    { category: 'Реактивность ЦНС', question: 'Я засыпаю:', options: [
-      { text: 'Без проблем, в одно и то же время', score: 5 },
-      { text: 'Тяжело засыпаю, иногда не получается уснуть', score: 2 },
-      { text: 'По-разному, зависит от усталости', score: 3 },
-      { text: 'Бессонница', score: 1 } ] },
-    { category: 'Морфометрия/Антропометрия', question: 'Сон:', options: [
-      { text: 'Глубокий и монолитный', score: 5 },
-      { text: 'Много просыпаюсь ночью', score: 2 },
-      { text: 'Просыпаюсь несколько раз за ночь', score: 3 } ] },
-    { category: 'Адаптивность', question: 'После тренировок я ощущаю боль:', options: [
-      { text: 'В тот же день', score: 4 },
-      { text: 'На следующий день', score: 3 },
-      { text: 'Через день', score: 2 },
-      { text: 'Не ощущаю вообще, хотя на тренировках мне тяжело', score: 1 } ] },
-    { category: 'Метаболизм', question: 'У меня:', options: [
-      { text: 'Нет одышки', score: 5 },
-      { text: 'Есть, но редко', score: 3 },
-      { text: 'Часто задыхаюсь', score: 1 } ] },
+    {
+      category: "Метаболизм",
+      text: "Как часто вы чувствуете упадок сил после еды?",
+      options: [
+        { text: "Никогда", score: 1 },
+        { text: "Иногда", score: 2 },
+        { text: "Часто", score: 3 },
+        { text: "Всегда", score: 5 }
+      ]
+    },
+    {
+      category: "Когнитивные способности",
+      text: "Как часто вы сталкиваетесь с трудностями при концентрации?",
+      options: [
+        { text: "Никогда", score: 1 },
+        { text: "Редко", score: 2 },
+        { text: "Иногда", score: 3 },
+        { text: "Часто", score: 5 }
+      ]
+    }
+    // Добавьте другие вопросы по аналогии
   ];
 
-  let categoryScores = {}; let categoryMaxScores = {};
+  let categoryScores = {}, categoryMaxScores = {};
   function initCategoryScores() {
     categoryScores = {}; categoryMaxScores = {};
     questions.forEach(q => {
@@ -221,73 +177,66 @@
 
   function renderIntro() {
     app.innerHTML = `
-      <div style="height: 150px; background: rgba(255,255,255,0.1); border-radius: 12px; margin-bottom: 25px;"></div>
+      <img src="https://via.placeholder.com/300x100?text=ЛОГОТИП" style="margin-bottom: 25px; max-width: 100%; border-radius: 12px;" />
+      <input type="text" id="username" placeholder="Имя" class="btn" />
+      <input type="text" id="contact" placeholder="Контакт для связи (опц.)" class="btn" />
       <button class="btn" id="start-btn">Начать опрос</button>
     `;
     document.getElementById('start-btn').onclick = () => {
-      disclaimerModal.style.display = 'flex';
-    };
-    document.getElementById('accept-disclaimer').onclick = () => {
-      disclaimerModal.style.display = 'none';
-      username = 'Пользователь';
-      contact = '';
+      username = document.getElementById('username').value.trim() || 'Пользователь';
+      contact = document.getElementById('contact').value.trim();
       answers.length = 0;
       initCategoryScores();
-      renderQuestion();
+      renderDisclaimer();
     };
-    document.getElementById('cancel-disclaimer').onclick = () => {
-      disclaimerModal.style.display = 'none';
-    };
+  }
+
+  function renderDisclaimer() {
+    app.innerHTML = `
+      <h2>Внимание</h2>
+      <p style="margin-bottom: 20px;">Ваши ответы будут обработаны с использованием искусственного интеллекта. Продолжая, вы соглашаетесь с этим.</p>
+      <button class="btn" id="accept-disclaimer">Продолжить тестирование</button>
+      <button class="btn" id="cancel-disclaimer">Отменить</button>
+    `;
+    document.getElementById('accept-disclaimer').onclick = () => renderQuestion();
+    document.getElementById('cancel-disclaimer').onclick = () => renderIntro();
   }
 
   let currentQuestionIndex = 0;
   function renderQuestion() {
     const q = questions[currentQuestionIndex];
-    let optionsHtml = q.options.map((opt, i) => `
-      <button class="btn" data-index="${i}">${opt.text}</button>
-    `).join('');
     app.innerHTML = `
-      <h3>${q.category}</h3>
-      <p><strong>Вопрос ${currentQuestionIndex + 1} из ${questions.length}:</strong> ${q.question}</p>
-      <div id="options">${optionsHtml}</div>
+      <h2>${q.category}</h2>
+      <h3>${q.text}</h3>
+      ${q.options.map((o, i) => `<button class="btn" onclick="answerQuestion(${i})">${o.text}</button>`).join('')}
     `;
-    const buttons = app.querySelectorAll('#options .btn');
-    buttons.forEach(btn => {
-      btn.onclick = () => {
-        buttons.forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        const answerIndex = +btn.dataset.index;
-        const score = q.options[answerIndex].score;
-        answers[currentQuestionIndex] = { ...q, answerIndex, score };
-        setTimeout(() => {
-          currentQuestionIndex++;
-          if (currentQuestionIndex < questions.length) {
-            renderQuestion();
-          } else {
-            renderLoader();
-          }
-        }, 300);
-      };
-    });
   }
+
+  window.answerQuestion = function(index) {
+    const q = questions[currentQuestionIndex];
+    answers.push({ category: q.category, score: q.options[index].score });
+    currentQuestionIndex++;
+    if (currentQuestionIndex < questions.length) {
+      renderQuestion();
+    } else {
+      renderLoader();
+    }
+  };
 
   function renderLoader() {
     app.innerHTML = `
-      <h2>Обрабатываем результаты...</h2>
-      <div id="loader-container">
-        <div id="loader-bar"></div>
-      </div>
+      <h2>Обработка результатов...</h2>
+      <div id="loader-container"><div id="loader-bar"></div></div>
     `;
-    const loaderBar = document.getElementById('loader-bar');
-    let width = 0;
+    let progress = 0;
     const interval = setInterval(() => {
-      width += 5 + Math.random() * 10;
-      if (width >= 100) {
+      progress += 5;
+      document.getElementById('loader-bar').style.width = progress + '%';
+      if (progress >= 100) {
         clearInterval(interval);
         renderResults();
       }
-      loaderBar.style.width = Math.min(100, width) + '%';
-    }, 150);
+    }, 100);
   }
 
   function renderResults() {
@@ -303,7 +252,7 @@
       if (score <= max * 0.2) interp = 'Всё отлично!';
       else if (score <= max * 0.7) interp = 'Есть над чем поработать.';
       else interp = 'Рекомендуется обратить внимание.';
-      html += `<div style="margin-bottom:20px;"><h3>${cat}</h3><p><em>${interp}</em></p></div>`;
+      html += `<div class="interpret-block"><h3>${cat}</h3><p><em>${interp}</em></p></div>`;
     }
     html += `<button id="download-pdf-btn">Скачать PDF</button>`;
     html += `<button id="restart-btn" class="btn">Пройти заново</button>`;
