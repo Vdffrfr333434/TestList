@@ -10,32 +10,23 @@
   html, body {
     margin: 0; padding: 0; height: 100%;
     background: url('https://i.ibb.co/q3LCfmXh/MSE-Tabata-Plan-Alt2.png') no-repeat center center fixed;
-    background-size: cover;
+    background-size: contain;
     font-family: 'IBM Plex Sans', sans-serif;
     color: #eee;
     display: flex;
     align-items: center;
     justify-content: center;
   }
-  body::before {
-    content: "";
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    backdrop-filter: blur(10px);
-    z-index: -1;
-  }
 
   .center {
-    background: rgba(32,32,32,0.25);
+    background: #333;
+    border: 1px solid #58a6ff;
     border-radius: 15px;
-    box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37);
     padding: 25px 30px;
     max-width: 500px;
     width: 75vw;
     text-align: center;
     user-select: none;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
   }
 
   h1, h2, h3 {
@@ -44,8 +35,8 @@
   }
 
   .btn {
-    background: rgba(255,255,255,0.15);
-    border: none;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid #58a6ff;
     border-radius: 12px;
     padding: 15px;
     margin: 8px 0;
@@ -57,7 +48,7 @@
     user-select: none;
   }
   .btn:hover, .btn.selected {
-    background: rgba(255,255,255,0.35);
+    background: rgba(88,166,255,0.25);
   }
 
   #result-page {
@@ -69,17 +60,19 @@
     padding: 80px 30px 30px 30px;
     border-radius: 15px;
     font-family: 'IBM Plex Sans', sans-serif;
-    width: 90vw;
+    width: 75vw;
     max-width: 800px;
     color: #fff;
+    margin: 0 auto;
   }
 
   #result-page .interpret-block {
     position: relative;
     margin-bottom: 60px;
     padding: 20px;
-    background: rgba(0, 0, 0, 0.5);
+    background: #444;
     border-radius: 12px;
+    border: 1px solid #58a6ff;
   }
 
   #result-page h2 {
@@ -93,23 +86,24 @@
     padding: 15px 30px;
     font-size: 1rem;
     border-radius: 15px;
-    background: rgba(255,255,255,0.2);
-    border: none;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid #58a6ff;
     color: #eee;
     cursor: pointer;
     transition: background 0.3s ease;
   }
   button#download-pdf-btn:hover {
-    background: rgba(255,255,255,0.45);
+    background: rgba(88,166,255,0.25);
   }
 
   #loader-container {
     margin-top: 30px;
     width: 100%;
-    background: rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.1);
     border-radius: 10px;
     overflow: hidden;
     height: 20px;
+    border: 1px solid #58a6ff;
   }
   #loader-bar {
     height: 100%;
@@ -123,6 +117,9 @@
       width: 90vw;
       padding: 20px;
     }
+    #result-page {
+      width: 90vw;
+    }
     .btn {
       padding: 14px;
       font-size: 1.1rem;
@@ -132,154 +129,17 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
-<div class="center" id="app"></div>
+<div class="center" id="app">
+  <img src="https://i.ibb.co/r2K5tJph/MSE-Logo-420-110.png" alt="Логотип MSE" style="max-width: 100%; margin-bottom: 20px;" />
+  <input type="text" id="username" placeholder="Имя" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #58a6ff;" />
+  <input type="text" id="contact" placeholder="Контакт для связи" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #58a6ff;" />
+  <button class="btn" id="start-btn">Начать опрос</button>
+</div>
 <script>
-(() => {
-  const app = document.getElementById('app');
-
-  let username = '';
-  let contact = '';
-  const answers = [];
-
-  const questions = [
-    {
-      category: 'Физическое',
-      text: 'Вы чувствуете усталость по утрам?',
-      options: [
-        { text: 'Да, часто', score: 5 },
-        { text: 'Иногда', score: 3 },
-        { text: 'Нет', score: 1 }
-      ]
-    },
-    {
-      category: 'Эмоциональное',
-      text: 'Вы испытываете стресс на работе?',
-      options: [
-        { text: 'Постоянно', score: 5 },
-        { text: 'Иногда', score: 3 },
-        { text: 'Редко', score: 1 }
-      ]
-    },
-    {
-      category: 'Социальное',
-      text: 'Часто ли вы встречаетесь с друзьями?',
-      options: [
-        { text: 'Редко', score: 5 },
-        { text: 'Иногда', score: 3 },
-        { text: 'Часто', score: 1 }
-      ]
-    },
-    {
-      category: 'Когнитивное',
-      text: 'Как часто вы читаете книги?',
-      options: [
-        { text: 'Редко', score: 5 },
-        { text: 'Иногда', score: 3 },
-        { text: 'Часто', score: 1 }
-      ]
-    }
-  ];
-
-  let categoryScores = {}, categoryMaxScores = {};
-  function initCategoryScores() {
-    categoryScores = {}; categoryMaxScores = {};
-    questions.forEach(q => {
-      if (!categoryScores[q.category]) categoryScores[q.category] = 0;
-      if (!categoryMaxScores[q.category]) categoryMaxScores[q.category] = 0;
-      categoryMaxScores[q.category] += Math.max(...q.options.map(o => o.score));
-    });
-  }
-
-  function renderIntro() {
-    app.innerHTML = `
-      <img src="https://i.ibb.co/r2K5tJph/MSE-Logo-420-110.png" style="margin-bottom: 25px; max-width: 100%; border-radius: 12px;" />
-      <input type="text" id="username" placeholder="Имя" class="btn" />
-      <input type="text" id="contact" placeholder="Контакт для связи (опц.)" class="btn" />
-      <button class="btn" id="start-btn">Начать опрос</button>
-    `;
-    document.getElementById('start-btn').onclick = () => {
-      username = document.getElementById('username').value.trim() || 'Пользователь';
-      contact = document.getElementById('contact').value.trim();
-      answers.length = 0;
-      initCategoryScores();
-      renderDisclaimer();
-    };
-  }
-
-  function renderDisclaimer() {
-    app.innerHTML = `
-      <h2>Внимание</h2>
-      <p style="margin-bottom: 20px;">Ваши ответы будут обработаны с использованием искусственного интеллекта. Продолжая, вы соглашаетесь с этим.</p>
-      <button class="btn" id="accept-disclaimer">Продолжить тестирование</button>
-      <button class="btn" id="cancel-disclaimer">Отменить</button>
-    `;
-    document.getElementById('accept-disclaimer').onclick = () => renderQuestion();
-    document.getElementById('cancel-disclaimer').onclick = () => renderIntro();
-  }
-
-  let currentQuestionIndex = 0;
-  function renderQuestion() {
-    const q = questions[currentQuestionIndex];
-    let html = `<h2>${q.category}</h2><p>${q.text}</p>`;
-    q.options.forEach((opt, i) => {
-      html += `<button class="btn" onclick="answer(${i})">${opt.text}</button>`;
-    });
-    app.innerHTML = html;
-  }
-
-  window.answer = (i) => {
-    const q = questions[currentQuestionIndex];
-    answers.push({ category: q.category, text: q.text, score: q.options[i].score });
-    currentQuestionIndex++;
-    if (currentQuestionIndex < questions.length) {
-      renderQuestion();
-    } else {
-      renderLoader();
-    }
-  }
-
-  function renderLoader() {
-    app.innerHTML = `<h2>Обработка результатов...</h2><div id="loader-container"><div id="loader-bar"></div></div>`;
-    let bar = document.getElementById('loader-bar');
-    let width = 0;
-    const interval = setInterval(() => {
-      width += 5;
-      bar.style.width = width + '%';
-      if (width >= 100) {
-        clearInterval(interval);
-        renderResults();
-      }
-    }, 100);
-  }
-
-  function renderResults() {
-    Object.keys(categoryScores).forEach(cat => categoryScores[cat] = 0);
-    answers.forEach(ans => {
-      categoryScores[ans.category] += ans.score;
-    });
-    let html = `<h2>Результаты для ${username}</h2>`;
-    for (const cat in categoryScores) {
-      const score = categoryScores[cat];
-      const max = categoryMaxScores[cat];
-      let interp = '';
-      if (score <= max * 0.2) interp = 'Всё отлично!';
-      else if (score <= max * 0.7) interp = 'Есть над чем поработать.';
-      else interp = 'Рекомендуется обратить внимание.';
-      html += `<div class="interpret-block"><h3>${cat}</h3><p><em>${interp}</em></p></div>`;
-    }
-    html += `<button id="download-pdf-btn">Скачать PDF</button>`;
-    html += `<button id="restart-btn" class="btn">Пройти заново</button>`;
-    app.innerHTML = `<div id="result-page">${html}</div>`;
-
-    document.getElementById('restart-btn').onclick = () => location.reload();
-    document.getElementById('download-pdf-btn').onclick = () => {
-      const opt = { margin: 0.5, filename: 'результаты.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: {}, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
-      html2pdf().from(document.getElementById('result-page')).set(opt).save();
-    };
-  }
-
-  renderIntro();
-})();
+  document.getElementById('start-btn').addEventListener('click', () => {
+    alert("Данные будут обработаны с использованием искусственного интеллекта. Продолжая, вы соглашаетесь на обработку персональных данных.");
+    // переход к следующему шагу должен быть реализован здесь
+  });
 </script>
 </body>
 </html>
