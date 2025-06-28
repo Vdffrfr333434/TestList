@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MSE Анкета</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(145deg, #1c1c1e, #2c2c2e);
+      color: white;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(12px);
+      padding: 2rem;
+      width: 90%;
+      max-width: 420px;
+    }
+
+    h2 {
+      margin-top: 0;
+      text-align: center;
+    }
+
+    input, select, button {
+      width: 100%;
+      margin-top: 1rem;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    button {
+      cursor: pointer;
+      background: #0a84ff;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #007aff;
+    }
+
+    .question {
+      margin-top: 1rem;
+    }
+
+    .answers {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    label {
+      background: rgba(255,255,255,0.05);
+      padding: 0.6rem;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    input[type="radio"] {
+      margin-right: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card" id="form-container">
+    <div id="start-form">
+      <h2>MSE | Входящее тестирование</h2>
+      <input type="text" id="username" placeholder="Имя и фамилия" required />
+      <input type="email" id="contact" placeholder="E-mail или Telegram" required />
+      <button onclick="startTest()">Начать</button>
+    </div>
+
+    <div id="question-form" style="display:none;">
+      <div class="question" id="question-text"></div>
+      <div class="answers" id="answers-container"></div>
+      <button onclick="nextQuestion()">Далее</button>
+    </div>
+
+    <div id="result" style="display:none;">
+      <h2>Спасибо!</h2>
+      <p>Отчет будет готов в течение минуты. Вы можете скачать PDF:</p>
+      <button onclick="generatePDF()">Скачать PDF</button>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    const questions = [
+      {
+        q: "Что вы делаете сразу после пробуждения?",
+        a: ["Проверяю сообщения", "Завтракаю", "Пью воду/кофе, но не ем", "Направляюсь в уборную", "Делаю зарядку"]
+      },
+      {
+        q: "Первый приём пищи у вас обычно:",
+        a: ["Завтрак дома", "Завтрак вне дома", "Обед вне дома", "По ситуации"]
+      },
+      {
+        q: "После еды вы ощущаете:",
+        a: ["Прилив сил и энергии", "Хочу полежать", "Хочу походить", "Хочу спать", "Ощущаю жар"]
+      }
+    ];
+
+    let currentQuestion = 0;
+    const answers = [];
+    let username = '';
+    let contact = '';
+
+    function startTest() {
+      username = document.getElementById('username').value.trim();
+      contact = document.getElementById('contact').value.trim();
+      if (!username || !contact) return alert("Заполните все поля!");
+
+      document.getElementById('start-form').style.display = 'none';
+      document.getElementById('question-form').style.display = 'block';
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const q = questions[currentQuestion];
+      document.getElementById('question-text').innerText = q.q;
+
+      const container = document.getElementById('answers-container');
+      container.innerHTML = '';
+      q.a.forEach((option, i) => {
+        const id = `q${currentQuestion}_a${i}`;
+        container.innerHTML += `
+          <label>
+            <input type="radio" name="answer" value="${option}" id="${id}" />
+            ${option}
+          </label>
+        `;
+      });
+    }
+
+    function nextQuestion() {
+      const selected = document.querySelector('input[name="answer"]:checked');
+      if (!selected) return alert("Выберите вариант ответа.");
+      answers.push({ question: questions[currentQuestion].q, answer: selected.value });
+
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        showQuestion();
+      } else {
+        document.getElementById('question-form').style.display = 'none';
+        document.getElementById('result').style.display = 'block';
+      }
+    }
+
+    function generatePDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFont("Helvetica", "normal");
+      doc.setFontSize(16);
+      doc.text(`MSE Отчёт по входящему тестированию`, 20, 20);
+      doc.setFontSize(12);
+      doc.text(`Имя: ${username}`, 20, 30);
+      doc.text(`Контакт: ${contact}`, 20, 38);
+
+      let y = 50;
+      answers.forEach((entry, index) => {
+        doc.text(`${index + 1}. ${entry.question}`, 20, y);
+        y += 7;
+        doc.text(`Ответ: ${entry.answer}`, 26, y);
+        y += 10;
+      });
+
+      doc.save(`MSE_Отчёт_${username}.pdf`);
+    }
+  </script>
+</body>
+</html>
