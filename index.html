@@ -51,23 +51,14 @@
   }
 
   #disclaimer-modal {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-  }
-
-  #disclaimer-box {
+    max-width: 500px;
+    margin: 40px auto;
     background: #222;
     padding: 30px;
     border-radius: 15px;
     border: 1px solid #58a6ff;
-    max-width: 500px;
-    width: 80vw;
     text-align: center;
+    user-select: none;
   }
 
   #question-block {
@@ -132,53 +123,77 @@
 
   .result-comment {
     font-size: 1rem;
+    white-space: pre-wrap;
+  }
+
+  #download-pdf-btn {
+    display: block;
+    margin: 30px auto 0;
+    padding: 15px 40px;
+    font-size: 1.1rem;
+    border-radius: 15px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid #58a6ff;
+    color: #eee;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  #download-pdf-btn:hover {
+    background: rgba(88,166,255,0.25);
   }
 
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
-<div class="center" id="app">
+
+<!-- Слайд 1: Ввод данных -->
+<div class="center" id="slide-1">
   <img src="https://i.ibb.co/r2K5tJph/MSE-Logo-420-110.png" alt="Логотип MSE" style="max-width: 100%; margin-bottom: 20px;" />
   <input type="text" id="username" placeholder="Имя" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #58a6ff;" />
   <input type="text" id="contact" placeholder="Контакт для связи" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #58a6ff;" />
   <button class="btn" id="start-btn">Начать тестирование</button>
 </div>
 
-<div id="disclaimer-modal" class="hidden" style="display:none;">
-  <div id="disclaimer-box">
-    <p>Данные будут обработаны с использованием искусственного интеллекта. Продолжая, вы соглашаетесь на обработку персональных данных.</p>
-    <button class="btn" id="agree-btn">Продолжить тестирование</button>
-    <button class="btn" id="cancel-btn">Отменить</button>
-  </div>
+<!-- Слайд 2: Дисклеймер -->
+<div id="slide-2" class="center" style="display:none;">
+  <p>Данные будут обработаны с использованием искусственного интеллекта. Продолжая, вы соглашаетесь на обработку персональных данных.</p>
+  <button class="btn" id="agree-btn">Продолжить тестирование</button>
+  <button class="btn" id="cancel-btn">Отменить</button>
 </div>
 
+<!-- Слайд 3: Вопросы -->
 <div id="question-block" style="display:none;">
   <div id="question-category"></div>
   <div id="question-text"></div>
   <div id="answers-container"></div>
 </div>
 
+<!-- Слайд 4: Результаты -->
 <div id="result-blocks" style="display:none;">
   <h2>Интерпретация результатов</h2>
   <div id="results-container"></div>
+  <button id="download-pdf-btn">Скачать PDF</button>
 </div>
 
 <script>
+  const slide1 = document.getElementById('slide-1');
+  const slide2 = document.getElementById('slide-2');
+  const questionBlock = document.getElementById('question-block');
+  const resultBlocks = document.getElementById('result-blocks');
+
   const startBtn = document.getElementById('start-btn');
-  const disclaimerModal = document.getElementById('disclaimer-modal');
   const agreeBtn = document.getElementById('agree-btn');
   const cancelBtn = document.getElementById('cancel-btn');
-  const appDiv = document.getElementById('app');
 
-  const questionBlock = document.getElementById('question-block');
   const questionCategory = document.getElementById('question-category');
   const questionText = document.getElementById('question-text');
   const answersContainer = document.getElementById('answers-container');
 
-  const resultBlocks = document.getElementById('result-blocks');
   const resultsContainer = document.getElementById('results-container');
+  const downloadPdfBtn = document.getElementById('download-pdf-btn');
 
-  // Пример вопросов с категориями и баллами (1-5)
+  // Вопросы и ответы
   const questions = [
     { id: 1, category: 'Метаболизм', text: 'Как вы оцениваете ваш уровень энергии?', answers: [
       {text: 'Очень низкий', points: 1},
@@ -201,48 +216,41 @@
       {text: 'Редко', points: 4},
       {text: 'Очень редко', points: 5},
     ]},
-    { id: 4, category: 'Энергообмен', text: 'Как вы оцениваете свою выносливость?', answers: [
+    { id: 4, category: 'Энергообмен', text: 'Как вы оцениваете вашу выносливость?', answers: [
       {text: 'Очень низкая', points: 1},
       {text: 'Низкая', points: 2},
       {text: 'Средняя', points: 3},
       {text: 'Высокая', points: 4},
       {text: 'Очень высокая', points: 5},
-    ]},
-    { id: 5, category: 'Метаболизм', text: 'Как часто вы чувствуете голод?', answers: [
-      {text: 'Очень редко', points: 5},
-      {text: 'Редко', points: 4},
-      {text: 'Иногда', points: 3},
-      {text: 'Часто', points: 2},
-      {text: 'Очень часто', points: 1},
     ]}
   ];
 
-  // Комментарии для интерпретации по категориям
+  // Интерпретации (только комментарии)
   const interpretation = {
     'Метаболизм': [
       {range: [0,5], comment: 'Низкий метаболизм — нужно увеличить активность и питание.'},
       {range: [6,10], comment: 'Средний метаболизм — поддерживайте баланс.'},
-      {range: [11,15], comment: 'Высокий метаболизм — хороший показатель здоровья.'}
+      {range: [11,20], comment: 'Высокий метаболизм — хороший показатель здоровья.'}
     ],
     'Когнитивные способности': [
       {range: [0,5], comment: 'Низкая скорость мышления — полезны тренировки мозга.'},
       {range: [6,10], comment: 'Средний уровень когнитивных способностей.'},
-      {range: [11,15], comment: 'Высокий уровень когнитивных способностей.'}
+      {range: [11,20], comment: 'Высокий уровень когнитивных способностей.'}
     ],
     'Термогенез': [
       {range: [0,5], comment: 'Чувствительность к холоду высокая, стоит улучшить терморегуляцию.'},
       {range: [6,10], comment: 'Нормальная терморегуляция.'},
-      {range: [11,15], comment: 'Отличная терморегуляция.'}
+      {range: [11,20], comment: 'Отличная терморегуляция.'}
     ],
     'Энергообмен': [
       {range: [0,5], comment: 'Низкая выносливость, нужна тренировка.'},
       {range: [6,10], comment: 'Средний уровень выносливости.'},
-      {range: [11,15], comment: 'Высокая выносливость.'}
+      {range: [11,20], comment: 'Высокая выносливость.'}
     ]
   };
 
   let currentQuestionIndex = 0;
-  let scores = {}; // категория => сумма баллов
+  let scores = {};
 
   function showQuestion(index) {
     if (index >= questions.length) {
@@ -252,14 +260,13 @@
     const q = questions[index];
     questionCategory.textContent = q.category;
     questionText.textContent = q.text;
-
     answersContainer.innerHTML = '';
-    q.answers.forEach((ans, i) => {
+
+    q.answers.forEach(ans => {
       const btn = document.createElement('button');
       btn.className = 'answer-btn';
       btn.textContent = ans.text;
       btn.onclick = () => {
-        // Добавляем баллы в соответствующую категорию
         if (!scores[q.category]) scores[q.category] = 0;
         scores[q.category] += ans.points;
 
@@ -277,7 +284,6 @@
 
     for (const category in scores) {
       const total = scores[category];
-      // Найдем интерпретацию по диапазону
       const interp = interpretation[category];
       let comment = 'Комментарий не найден';
       if (interp) {
@@ -291,7 +297,7 @@
 
       const catDiv = document.createElement('div');
       catDiv.className = 'result-category';
-      catDiv.textContent = `${category} — баллы: ${total}`;
+      catDiv.textContent = category;
 
       const commDiv = document.createElement('div');
       commDiv.className = 'result-comment';
@@ -309,22 +315,33 @@
       alert('Пожалуйста, заполните имя и контакт для связи');
       return;
     }
-    disclaimerModal.style.display = 'flex';
+    slide1.style.display = 'none';
+    slide2.style.display = 'block';
   });
 
   cancelBtn.addEventListener('click', () => {
-    disclaimerModal.style.display = 'none';
+    slide2.style.display = 'none';
+    slide1.style.display = 'block';
   });
 
   agreeBtn.addEventListener('click', () => {
-    disclaimerModal.style.display = 'none';
-    appDiv.style.display = 'none';
-    // Показываем первый вопрос
+    slide2.style.display = 'none';
     questionBlock.style.display = 'block';
     currentQuestionIndex = 0;
     scores = {};
     showQuestion(currentQuestionIndex);
   });
+
+  downloadPdfBtn.addEventListener('click', () => {
+    const element = document.getElementById('result-blocks');
+    html2pdf().from(element).set({
+      margin: 0.5,
+      filename: 'MSE_results.pdf',
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    }).save();
+  });
 </script>
+
 </body>
 </html>
