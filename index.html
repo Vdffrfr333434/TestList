@@ -7,35 +7,34 @@
   <style>
     body {
       margin: 0;
-      padding: 0;
       font-family: "Segoe UI", sans-serif;
-      background: linear-gradient(145deg, #1c1c1e, #2c2c2e);
+      background: linear-gradient(135deg, #1f1f1f, #2a2a2a);
       color: white;
-      height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
+      height: 100vh;
     }
 
     .card {
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
       border-radius: 16px;
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(12px);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
       padding: 2rem;
       width: 90%;
-      max-width: 420px;
+      max-width: 500px;
     }
 
     h2 {
-      margin-top: 0;
       text-align: center;
+      margin-top: 0;
     }
 
-    input, select, button {
+    input, button {
       width: 100%;
-      margin-top: 1rem;
       padding: 0.75rem;
+      margin-top: 1rem;
       font-size: 1rem;
       border: none;
       border-radius: 8px;
@@ -55,17 +54,19 @@
 
     .question {
       margin-top: 1rem;
+      font-weight: bold;
     }
 
     .answers {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      margin-top: 1rem;
     }
 
     label {
-      background: rgba(255,255,255,0.05);
-      padding: 0.6rem;
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+      background: rgba(255, 255, 255, 0.07);
       border-radius: 8px;
       cursor: pointer;
     }
@@ -81,7 +82,7 @@
     <div id="start-form">
       <h2>MSE | Входящее тестирование</h2>
       <input type="text" id="username" placeholder="Имя и фамилия" required />
-      <input type="email" id="contact" placeholder="E-mail или Telegram" required />
+      <input type="text" id="contact" placeholder="E-mail или Telegram" required />
       <button onclick="startTest()">Начать</button>
     </div>
 
@@ -93,8 +94,8 @@
 
     <div id="result" style="display:none;">
       <h2>Спасибо!</h2>
-      <p>Отчет будет готов в течение минуты. Вы можете скачать PDF:</p>
-      <button onclick="generatePDF()">Скачать PDF</button>
+      <p>PDF будет открыт в новой вкладке.</p>
+      <button onclick="generatePDF()">Открыть PDF</button>
     </div>
   </div>
 
@@ -103,16 +104,25 @@
     const questions = [
       {
         q: "Что вы делаете сразу после пробуждения?",
-        a: ["Проверяю сообщения", "Завтракаю", "Пью воду/кофе, но не ем", "Направляюсь в уборную", "Делаю зарядку"]
+        a: ["Проверяю телефон", "Пью воду/кофе", "Иду в уборную", "Завтракаю", "Делаю зарядку"]
       },
       {
-        q: "Первый приём пищи у вас обычно:",
-        a: ["Завтрак дома", "Завтрак вне дома", "Обед вне дома", "По ситуации"]
+        q: "Первый приём пищи у вас:",
+        a: ["Завтрак дома", "Завтрак вне дома", "Обед", "По ситуации"]
       },
       {
-        q: "После еды вы ощущаете:",
-        a: ["Прилив сил и энергии", "Хочу полежать", "Хочу походить", "Хочу спать", "Ощущаю жар"]
+        q: "После еды вы обычно:",
+        a: ["Хочу полежать", "Хочу двигаться", "Ощущаю жар", "Чувствую бодрость", "Хочу спать"]
+      },
+      {
+        q: "Вы засыпаете:",
+        a: ["Быстро и в одно и то же время", "Засыпаю тяжело", "По-разному", "Страдаю от бессонницы"]
+      },
+      {
+        q: "Как вы ощущаете жаркую погоду?",
+        a: ["Очень жарко, много потею", "Жарко, но не потею", "Нормально переношу"]
       }
+      // Добавьте больше вопросов при необходимости
     ];
 
     let currentQuestion = 0;
@@ -123,8 +133,10 @@
     function startTest() {
       username = document.getElementById('username').value.trim();
       contact = document.getElementById('contact').value.trim();
-      if (!username || !contact) return alert("Заполните все поля!");
-
+      if (!username || !contact) {
+        alert("Пожалуйста, заполните все поля.");
+        return;
+      }
       document.getElementById('start-form').style.display = 'none';
       document.getElementById('question-form').style.display = 'block';
       showQuestion();
@@ -136,21 +148,28 @@
 
       const container = document.getElementById('answers-container');
       container.innerHTML = '';
+
       q.a.forEach((option, i) => {
         const id = `q${currentQuestion}_a${i}`;
-        container.innerHTML += `
-          <label>
-            <input type="radio" name="answer" value="${option}" id="${id}" />
-            ${option}
-          </label>
+        const label = document.createElement('label');
+        label.innerHTML = `
+          <input type="radio" name="answer" value="${option}" id="${id}"> ${option}
         `;
+        container.appendChild(label);
       });
     }
 
     function nextQuestion() {
       const selected = document.querySelector('input[name="answer"]:checked');
-      if (!selected) return alert("Выберите вариант ответа.");
-      answers.push({ question: questions[currentQuestion].q, answer: selected.value });
+      if (!selected) {
+        alert("Выберите ответ.");
+        return;
+      }
+
+      answers.push({
+        question: questions[currentQuestion].q,
+        answer: selected.value
+      });
 
       currentQuestion++;
       if (currentQuestion < questions.length) {
@@ -164,10 +183,8 @@
     function generatePDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
-
-      doc.setFont("Helvetica", "normal");
-      doc.setFontSize(16);
-      doc.text(`MSE Отчёт по входящему тестированию`, 20, 20);
+      doc.setFontSize(14);
+      doc.text(`MSE Отчёт`, 20, 20);
       doc.setFontSize(12);
       doc.text(`Имя: ${username}`, 20, 30);
       doc.text(`Контакт: ${contact}`, 20, 38);
@@ -175,12 +192,18 @@
       let y = 50;
       answers.forEach((entry, index) => {
         doc.text(`${index + 1}. ${entry.question}`, 20, y);
-        y += 7;
+        y += 6;
         doc.text(`Ответ: ${entry.answer}`, 26, y);
         y += 10;
+        if (y > 270) {
+          doc.addPage();
+          y = 20;
+        }
       });
 
-      doc.save(`MSE_Отчёт_${username}.pdf`);
+      const blob = doc.output("blob");
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
     }
   </script>
 </body>
