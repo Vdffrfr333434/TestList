@@ -16,7 +16,7 @@
     overflow-x: hidden;
   }
 
-  .center, #question-block, #result-blocks {
+  .center, #question-block, #result-blocks, #loading-block {
     background: #333;
     border: 1px solid #58a6ff;
     border-radius: 15px;
@@ -25,9 +25,9 @@
     width: 75vw;
     text-align: center;
     user-select: none;
-    margin: calc(25vw) auto 40px auto; /* отступ сверху 25% ширины + снизу 40px */
+    margin: calc(25vw) auto 40px auto;
     opacity: 1;
-    transition: opacity 0.4s ease;
+    transition: opacity 0.2s ease;
   }
 
   h1, h2, h3 {
@@ -41,13 +41,18 @@
     border-radius: 12px;
     padding: 15px;
     margin: 8px 0;
-    width: 100%;
     font-size: 1rem;
     color: #eee;
     cursor: pointer;
     transition: background 0.3s ease;
     user-select: none;
+    display: block;
   }
+
+  #start-btn {
+    width: 100%; /* Кнопка на всю ширину инпутов */
+  }
+
   .btn:hover, .btn.selected {
     background: rgba(88,166,255,0.25);
   }
@@ -161,13 +166,38 @@
     opacity: 1 !important;
   }
 
+  /* Блок загрузки */
+  #loading-block {
+    max-width: 400px;
+    padding: 20px 30px;
+    text-align: center;
+  }
+  #loading-text {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+  }
+  #loading-bar-container {
+    background: #555;
+    border-radius: 10px;
+    height: 16px;
+    width: 100%;
+    overflow: hidden;
+  }
+  #loading-bar {
+    background: #58a6ff;
+    height: 100%;
+    width: 0;
+    border-radius: 10px;
+    transition: width 2.5s linear;
+  }
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
 <!-- Слайд 1: Ввод данных -->
-<div class="center" id="slide-1">
+<div class="center fade-in" id="slide-1">
   <img src="https://i.ibb.co/r2K5tJph/MSE-Logo-420-110.png" alt="Логотип MSE" style="max-width: 100%; margin-bottom: 20px;" />
   <input type="text" id="username" placeholder="Имя" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #58a6ff;" />
   <input type="text" id="contact" placeholder="Контакт для связи" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #58a6ff;" />
@@ -189,6 +219,14 @@
   <div id="answers-container"></div>
 </div>
 
+<!-- Слайд 3.5: Лоадер обработки -->
+<div id="loading-block" class="center" style="display:none;">
+  <div id="loading-text">Обработка данных...</div>
+  <div id="loading-bar-container">
+    <div id="loading-bar"></div>
+  </div>
+</div>
+
 <!-- Слайд 4: Результаты -->
 <div id="result-blocks" style="display:none;">
   <h2>Интерпретация результатов</h2>
@@ -200,6 +238,7 @@
   const slide1 = document.getElementById('slide-1');
   const slide2 = document.getElementById('slide-2');
   const questionBlock = document.getElementById('question-block');
+  const loadingBlock = document.getElementById('loading-block');
   const resultBlocks = document.getElementById('result-blocks');
 
   const startBtn = document.getElementById('start-btn');
@@ -214,6 +253,8 @@
   const downloadPdfBtn = document.getElementById('download-pdf-btn');
 
   const errorMsg = document.getElementById('error-msg');
+
+  const loadingBar = document.getElementById('loading-bar');
 
   // Вопросы и ответы
   const questions = [
@@ -265,124 +306,154 @@
       {range: [11,20], comment: 'Отличная терморегуляция.'}
     ],
     'Энергообмен': [
-      {range: [0,5], comment: 'Низкая выносливость, нужна тренировка.'},
-      {range: [6,10], comment: 'Средний уровень выносливости.'},
-      {range: [11,20], comment: 'Высокая выносливость.'}
+      {range: [0,5], comment: 'Низкая выносливость, рекомендуются упражнения на выносливость.'},
+      {range: [6,10], comment: 'Средняя выносливость.'},
+      {range: [11,20], comment: 'Отличная выносливость.'}
     ]
   };
 
+  let userData = {};
   let currentQuestionIndex = 0;
   let scores = {};
 
   function fadeOut(element) {
-    return new Promise(resolve => {
-      element.classList.add('fade-out');
-      element.classList.remove('fade-in');
-      setTimeout(() => resolve(), 400);
-    });
+    element.style.opacity = '0';
   }
   function fadeIn(element) {
-    return new Promise(resolve => {
-      element.classList.add('fade-in');
-      element.classList.remove('fade-out');
-      setTimeout(() => resolve(), 400);
-    });
+    element.style.opacity = '1';
   }
 
-  async function showQuestion(index) {
-    if (index >= questions.length) {
-      await fadeOut(questionBlock);
-      showResults();
-      await fadeIn(resultBlocks);
+  // Показать вопрос
+  function showQuestion(idx) {
+    if (idx >= questions.length) {
+      // Все вопросы отвечены
+      startLoadingAndShowResults();
       return;
     }
-    const q = questions[index];
+    const q = questions[idx];
     questionCategory.textContent = q.category;
     questionText.textContent = q.text;
     answersContainer.innerHTML = '';
-
-    q.answers.forEach(ans => {
+    q.answers.forEach((ans, i) => {
       const btn = document.createElement('button');
-      btn.className = 'answer-btn';
       btn.textContent = ans.text;
-      btn.onclick = async () => {
+      btn.className = 'answer-btn';
+      btn.onclick = () => {
+        // Записываем очки
         if (!scores[q.category]) scores[q.category] = 0;
         scores[q.category] += ans.points;
-
-        await fadeOut(questionBlock);
         currentQuestionIndex++;
-        showQuestion(currentQuestionIndex);
-        await fadeIn(questionBlock);
+        // Плавный переход к следующему вопросу
+        fadeOut(questionBlock);
+        setTimeout(() => {
+          showQuestion(currentQuestionIndex);
+          fadeIn(questionBlock);
+        }, 200);
       };
       answersContainer.appendChild(btn);
     });
   }
 
-  function showResults() {
-    questionBlock.style.display = 'none';
-    resultBlocks.style.display = 'block';
-    resultsContainer.innerHTML = '';
+  // Проверка имени и контакта
+  function validateUserData() {
+    const username = document.getElementById('username').value.trim();
+    const contact = document.getElementById('contact').value.trim();
+    if (!username || !contact) {
+      errorMsg.style.display = 'block';
+      errorMsg.textContent = 'Пожалуйста, заполните оба поля.';
+      return false;
+    }
+    errorMsg.style.display = 'none';
+    userData = { username, contact };
+    return true;
+  }
 
-    for (const category in scores) {
-      const total = scores[category];
-      const interp = interpretation[category];
-      let comment = 'Комментарий не найден';
-      if (interp) {
-        for (const item of interp) {
-          if (total >= item.range[0] && total <= item.range[1]) {
-            comment = item.comment;
+  startBtn.onclick = () => {
+    if (!validateUserData()) return;
+    // Переход к дисклеймеру
+    fadeOut(slide1);
+    setTimeout(() => {
+      slide1.style.display = 'none';
+      slide2.style.display = 'block';
+      fadeIn(slide2);
+    }, 200);
+  };
+
+  cancelBtn.onclick = () => {
+    // Возврат на ввод данных
+    fadeOut(slide2);
+    setTimeout(() => {
+      slide2.style.display = 'none';
+      slide1.style.display = 'block';
+      fadeIn(slide1);
+    }, 200);
+  };
+
+  agreeBtn.onclick = () => {
+    fadeOut(slide2);
+    setTimeout(() => {
+      slide2.style.display = 'none';
+      questionBlock.style.display = 'block';
+      currentQuestionIndex = 0;
+      scores = {};
+      showQuestion(currentQuestionIndex);
+      fadeIn(questionBlock);
+    }, 200);
+  };
+
+  // Лоадер и вывод результатов
+  function startLoadingAndShowResults() {
+    fadeOut(questionBlock);
+    setTimeout(() => {
+      questionBlock.style.display = 'none';
+      loadingBlock.style.display = 'block';
+      fadeIn(loadingBlock);
+
+      // Запускаем анимацию загрузки
+      loadingBar.style.width = '0%';
+      setTimeout(() => {
+        loadingBar.style.transition = 'width 2.5s linear';
+        loadingBar.style.width = '100%';
+      }, 50);
+
+      setTimeout(() => {
+        fadeOut(loadingBlock);
+        setTimeout(() => {
+          loadingBlock.style.display = 'none';
+          showResults();
+          resultBlocks.style.display = 'block';
+          fadeIn(resultBlocks);
+        }, 200);
+      }, 2600);
+    }, 200);
+  }
+
+  function showResults() {
+    resultsContainer.innerHTML = '';
+    for (const cat in scores) {
+      const catScore = scores[cat];
+      const catInterps = interpretation[cat];
+      let comment = '';
+      if (catInterps) {
+        for (const interp of catInterps) {
+          if (catScore >= interp.range[0] && catScore <= interp.range[1]) {
+            comment = interp.comment;
             break;
           }
         }
       }
-
-      const catDiv = document.createElement('div');
-      catDiv.className = 'result-category';
-      catDiv.textContent = category;
-
-      const commDiv = document.createElement('div');
-      commDiv.className = 'result-comment';
-      commDiv.textContent = comment;
-
-      resultsContainer.appendChild(catDiv);
-      resultsContainer.appendChild(commDiv);
+      const divCat = document.createElement('div');
+      divCat.className = 'result-category';
+      divCat.textContent = cat + ': ' + catScore;
+      const divComment = document.createElement('div');
+      divComment.className = 'result-comment';
+      divComment.textContent = comment;
+      resultsContainer.appendChild(divCat);
+      resultsContainer.appendChild(divComment);
     }
   }
-
-  async function fadeSwap(hideElem, showElem) {
-    await fadeOut(hideElem);
-    hideElem.style.display = 'none';
-    showElem.style.display = 'block';
-    await fadeIn(showElem);
-  }
-
-  startBtn.addEventListener('click', async () => {
-    errorMsg.style.display = 'none';
-    const username = document.getElementById('username').value.trim();
-    const contact = document.getElementById('contact').value.trim();
-    if (!username || !contact) {
-      errorMsg.textContent = 'Пожалуйста, заполните имя и контакт для связи';
-      errorMsg.style.display = 'block';
-      return;
-    }
-    await fadeSwap(slide1, slide2);
-  });
-
-  cancelBtn.addEventListener('click', async () => {
-    errorMsg.style.display = 'none';
-    await fadeSwap(slide2, slide1);
-  });
-
-  agreeBtn.addEventListener('click', async () => {
-    errorMsg.style.display = 'none';
-    await fadeSwap(slide2, questionBlock);
-    currentQuestionIndex = 0;
-    scores = {};
-    showQuestion(currentQuestionIndex);
-  });
 
   downloadPdfBtn.addEventListener('click', () => {
-    // Скрываем кнопку перед генерацией PDF
     downloadPdfBtn.style.display = 'none';
     const element = document.getElementById('result-blocks');
     html2pdf().from(element).set({
@@ -391,7 +462,6 @@
       html2canvas: { scale: 2 },
       jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
     }).save().finally(() => {
-      // Возвращаем кнопку после сохранения
       downloadPdfBtn.style.display = 'block';
     });
   });
