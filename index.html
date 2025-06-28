@@ -1,182 +1,157 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>MSE Анкета</title>
+  <meta charset="UTF-8">
+  <title>MSE Входящий Тест</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
-    body {
+    html, body {
       margin: 0;
-      font-family: "Segoe UI", sans-serif;
-      background: linear-gradient(135deg, #1f1f1f, #2a2a2a);
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', sans-serif;
+      background: #121212;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .background {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: url('https://www.transparenttextures.com/patterns/stardust.png') repeat,
+                  linear-gradient(135deg, #1a1a1a, #2e2e2e);
+      z-index: 0;
     }
 
     .card {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(10px);
+      position: relative;
+      z-index: 1;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
       border-radius: 16px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
       padding: 2rem;
       width: 90%;
       max-width: 500px;
-    }
-
-    h2 {
-      text-align: center;
-      margin-top: 0;
-    }
-
-    input, button {
-      width: 100%;
-      padding: 0.75rem;
-      margin-top: 1rem;
-      font-size: 1rem;
-      border: none;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.1);
+      margin: auto;
       color: white;
     }
 
-    button {
-      cursor: pointer;
-      background: #0a84ff;
-      transition: background 0.3s ease;
+    .center {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    button:hover {
-      background: #007aff;
+    .input-group {
+      margin-bottom: 1rem;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 8px;
+      margin-top: 0.5rem;
     }
 
     .question {
-      margin-top: 1rem;
-      font-weight: bold;
+      font-size: 1.2rem;
+      margin-bottom: 1.5rem;
     }
 
-    .answers {
-      display: flex;
-      flex-direction: column;
-      margin-top: 1rem;
-    }
-
-    label {
-      padding: 0.5rem;
-      margin-bottom: 0.5rem;
-      background: rgba(255, 255, 255, 0.07);
-      border-radius: 8px;
+    .answers button {
+      display: block;
+      width: 100%;
+      margin-bottom: 0.75rem;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
       cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.3s;
     }
 
-    input[type="radio"] {
-      margin-right: 0.5rem;
+    .answers button:hover {
+      background: rgba(255, 255, 255, 0.2);
     }
   </style>
 </head>
 <body>
-
-  <div class="card" id="form-container">
-    <div id="start-form">
-      <h2>MSE | Входящее тестирование</h2>
-      <input type="text" id="username" placeholder="Имя и фамилия" required />
-      <input type="text" id="contact" placeholder="E-mail или Telegram" required />
+  <div class="background"></div>
+  <div class="center">
+    <div class="card" id="form">
+      <div class="input-group">
+        <label>Имя</label>
+        <input type="text" id="username" placeholder="Введите ваше имя">
+      </div>
+      <div class="input-group">
+        <label>Контакт для связи</label>
+        <input type="text" id="contact" placeholder="E-mail или Telegram">
+      </div>
       <button onclick="startTest()">Начать</button>
-    </div>
-
-    <div id="question-form" style="display:none;">
-      <div class="question" id="question-text"></div>
-      <div class="answers" id="answers-container"></div>
-      <button onclick="nextQuestion()">Далее</button>
-    </div>
-
-    <div id="result" style="display:none;">
-      <h2>Спасибо!</h2>
-      <p>PDF будет открыт в новой вкладке.</p>
-      <button onclick="generatePDF()">Открыть PDF</button>
     </div>
   </div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
     const questions = [
       {
-        q: "Что вы делаете сразу после пробуждения?",
-        a: ["Проверяю телефон", "Пью воду/кофе", "Иду в уборную", "Завтракаю", "Делаю зарядку"]
+        question: "Что вы делаете сразу после пробуждения?",
+        answers: ["Проверяю телефон", "Завтракаю", "Пью воду/кофе, но не ем", "Иду в уборную", "Делаю зарядку"]
       },
       {
-        q: "Первый приём пищи у вас:",
-        a: ["Завтрак дома", "Завтрак вне дома", "Обед", "По ситуации"]
+        question: "Первый приём пищи у вас обычно:",
+        answers: ["Дома (завтрак)", "Вне дома", "Обед — первый приём", "Зависит от дня"]
       },
       {
-        q: "После еды вы обычно:",
-        a: ["Хочу полежать", "Хочу двигаться", "Ощущаю жар", "Чувствую бодрость", "Хочу спать"]
+        question: "Как вы переносите длительное отсутствие еды?",
+        answers: ["Без проблем", "Чувствую голод", "Не чувствую голода", "Сильный дискомфорт"]
       },
       {
-        q: "Вы засыпаете:",
-        a: ["Быстро и в одно и то же время", "Засыпаю тяжело", "По-разному", "Страдаю от бессонницы"]
+        question: "После еды вы обычно ощущаете:",
+        answers: ["Прилив сил", "Желание полежать", "Хочу походить", "Сонливость", "Ощущаю жар"]
       },
       {
-        q: "Как вы ощущаете жаркую погоду?",
-        a: ["Очень жарко, много потею", "Жарко, но не потею", "Нормально переношу"]
+        question: "Как вы просыпаетесь?",
+        answers: ["Рано, без будильника", "Рано, с будильником", "По ситуации", "Поздно и тяжело", "Поздно, но легко"]
       }
-      // Добавьте больше вопросов при необходимости
+      // Добавь ещё вопросы по желанию
     ];
 
-    let currentQuestion = 0;
-    const answers = [];
-    let username = '';
-    let contact = '';
+    let currentIndex = 0;
+    let answers = [];
+    let username = "";
+    let contact = "";
 
     function startTest() {
-      username = document.getElementById('username').value.trim();
-      contact = document.getElementById('contact').value.trim();
-      if (!username || !contact) {
-        alert("Пожалуйста, заполните все поля.");
-        return;
-      }
-      document.getElementById('start-form').style.display = 'none';
-      document.getElementById('question-form').style.display = 'block';
+      username = document.getElementById("username").value;
+      contact = document.getElementById("contact").value;
+      if (!username || !contact) return alert("Введите имя и контакт");
       showQuestion();
     }
 
     function showQuestion() {
-      const q = questions[currentQuestion];
-      document.getElementById('question-text').innerText = q.q;
-
-      const container = document.getElementById('answers-container');
-      container.innerHTML = '';
-
-      q.a.forEach((option, i) => {
-        const id = `q${currentQuestion}_a${i}`;
-        const label = document.createElement('label');
-        label.innerHTML = `
-          <input type="radio" name="answer" value="${option}" id="${id}"> ${option}
-        `;
-        container.appendChild(label);
-      });
+      const form = document.getElementById("form");
+      const q = questions[currentIndex];
+      form.innerHTML = `
+        <div class="question">${q.question}</div>
+        <div class="answers">
+          ${q.answers.map(ans => `<button onclick="selectAnswer('${ans.replace(/'/g, "\'")}')">${ans}</button>`).join('')}
+        </div>
+      `;
     }
 
-    function nextQuestion() {
-      const selected = document.querySelector('input[name="answer"]:checked');
-      if (!selected) {
-        alert("Выберите ответ.");
-        return;
-      }
-
-      answers.push({
-        question: questions[currentQuestion].q,
-        answer: selected.value
-      });
-
-      currentQuestion++;
-      if (currentQuestion < questions.length) {
-        showQuestion();
+    function selectAnswer(answer) {
+      answers.push({ question: questions[currentIndex].question, answer });
+      currentIndex++;
+      if (currentIndex >= questions.length) {
+        generatePDF();
       } else {
-        document.getElementById('question-form').style.display = 'none';
-        document.getElementById('result').style.display = 'block';
+        showQuestion();
       }
     }
 
@@ -203,7 +178,8 @@
 
       const blob = doc.output("blob");
       const url = URL.createObjectURL(blob);
-      window.open(url, "_blank");
+      const win = window.open(url, "_blank");
+      if (!win) alert("Пожалуйста, разрешите всплывающие окна в браузере.");
     }
   </script>
 </body>
