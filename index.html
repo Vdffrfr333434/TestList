@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>MSE Опросник</title>
+<title>MSE Опросник с Категориями и Баллами</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
 
@@ -26,17 +26,19 @@
   }
 
   .center {
-    background: rgba(32,32,32,0.6);
+    background: rgba(32,32,32,0.25);
     border-radius: 15px;
     box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37);
-    padding: 30px 40px;
-    max-width: 450px;
-    width: 90vw;
+    padding: 25px 30px;
+    max-width: 500px;
+    width: 75vw;
     text-align: center;
     user-select: none;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
   }
 
-  h1, h2 {
+  h1, h2, h3 {
     margin-bottom: 20px;
     font-weight: 600;
   }
@@ -72,9 +74,11 @@
 
   #result-page {
     text-align: left;
-    background: rgba(40,40,40,0.7);
-    padding: 25px 30px;
+    background: rgba(40,40,40,0.35);
+    padding: 20px 25px;
     border-radius: 15px;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
   }
 
   #result-page h2 {
@@ -101,12 +105,40 @@
   button#download-pdf-btn:hover {
     background: rgba(255,255,255,0.45);
   }
+
+  /* Лоадбар */
+  #loader-container {
+    margin-top: 30px;
+    width: 100%;
+    background: rgba(255,255,255,0.15);
+    border-radius: 10px;
+    overflow: hidden;
+    height: 20px;
+  }
+  #loader-bar {
+    height: 100%;
+    width: 0%;
+    background: #4caf50;
+    transition: width 0.4s ease;
+  }
+
+  /* Адаптивность */
+  @media(max-width: 600px) {
+    .center {
+      width: 90vw;
+      padding: 20px 20px;
+    }
+    .btn {
+      padding: 14px;
+      font-size: 1.1rem;
+    }
+  }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
   <div class="center" id="app">
-    <!-- Здесь будут формы и вопросы -->
+    <!-- Контент подгружается через JS -->
   </div>
 
 <script>
@@ -117,244 +149,231 @@
   let contact = '';
   const answers = [];
 
-  // Вопросы с вариантами (пример, расширяй как хочешь)
+  // Структура вопросов с категориями и баллами
   const questions = [
     {
+      category: 'Утренние привычки',
       question: 'Что ты делаешь сразу после пробуждения',
       options: [
-        'Проверяю сообщения',
-        'Завтракаю',
-        'Пью воду/кофе, но не ем',
-        'Направляюсь в уборную',
-        'Делаю зарядку'
+        { text: 'Проверяю сообщения', score: 3 },
+        { text: 'Завтракаю', score: 4 },
+        { text: 'Пью воду/кофе, но не ем', score: 2 },
+        { text: 'Направляюсь в уборную', score: 5 },
+        { text: 'Делаю зарядку', score: 1 }
       ]
     },
     {
+      category: 'Питание',
       question: 'Первый приём пищи у тебя',
       options: [
-        'Завтрак дома',
-        'Завтрак вне дома',
-        'Обед вне дома',
-        'По ситуации'
+        { text: 'Завтрак дома', score: 5 },
+        { text: 'Завтрак вне дома', score: 3 },
+        { text: 'Обед вне дома', score: 2 },
+        { text: 'По ситуации', score: 1 }
       ]
     },
     {
+      category: 'Питание',
       question: 'Долгое время без еды я:',
       options: [
-        'Переношу без проблем',
-        'Чувствую голод',
-        'Не чувствую голод',
-        'Чувствую сильный дискомфорт'
+        { text: 'Переношу без проблем', score: 5 },
+        { text: 'Чувствую голод', score: 3 },
+        { text: 'Не чувствую голод', score: 2 },
+        { text: 'Чувствую сильный дискомфорт', score: 1 }
       ]
     },
     {
+      category: 'Питание',
       question: 'После еды я:',
       options: [
-        'Ощущаю прилив сил и энергии',
-        'Хочу полежать, переварить еду',
-        'Хочу походить, переварить еду',
-        'Хочу спать',
-        'Ощущаю жар'
+        { text: 'Ощущаю прилив сил и энергии', score: 5 },
+        { text: 'Хочу полежать, переварить еду', score: 3 },
+        { text: 'Хочу походить, переварить еду', score: 4 },
+        { text: 'Хочу спать', score: 1 },
+        { text: 'Ощущаю жар', score: 2 }
       ]
     },
     {
-      question: 'Утром я встаю:',
-      options: [
-        'Рано, без будильника',
-        'Рано, с будильником',
-        'По ситуации',
-        'Встаю поздно и тяжело',
-        'Встаю поздно легко'
-      ]
-    },
-    {
-      question: 'В жару мне:',
-      options: [
-        'Очень жарко, много потею',
-        'Очень жарко, но не потею или потею мало',
-        'Нормально переношу жару'
-      ]
-    },
-    {
-      question: 'В холодную погоду я:',
-      options: [
-        'Очень мёрзну и не могу согреться',
-        'Нормально переношу холод'
-      ]
-    },
-    {
-      question: 'После тренировки я:',
-      options: [
-        'Очень хочу есть',
-        'Очень хочу пить',
-        'Могу не есть несколько часов',
-        'Хочу спать',
-        'Ощущаю прилив сил'
-      ]
-    },
-    {
+      category: 'Режим сна',
       question: 'Я засыпаю:',
       options: [
-        'Без проблем, в одно и то же время',
-        'Тяжело засыпаю, иногда не получается уснуть',
-        'По-разному, зависит от усталости',
-        'Бессонница'
+        { text: 'Без проблем, в одно и то же время', score: 5 },
+        { text: 'Тяжело засыпаю, иногда не получается уснуть', score: 2 },
+        { text: 'По-разному, зависит от усталости', score: 3 },
+        { text: 'Бессонница', score: 1 }
       ]
     },
     {
+      category: 'Режим сна',
       question: 'Сон:',
       options: [
-        'Глубокий и монолитный',
-        'Много просыпаюсь ночью',
-        'Просыпаюсь несколько раз за ночь'
+        { text: 'Глубокий и монолитный', score: 5 },
+        { text: 'Много просыпаюсь ночью', score: 2 },
+        { text: 'Просыпаюсь несколько раз за ночь', score: 3 }
       ]
     },
     {
+      category: 'Физическое состояние',
       question: 'После тренировок я ощущаю боль:',
       options: [
-        'В тот же день',
-        'На следующий день',
-        'Через день',
-        'Не ощущаю вообще, хотя на тренировках мне тяжело'
+        { text: 'В тот же день', score: 4 },
+        { text: 'На следующий день', score: 3 },
+        { text: 'Через день', score: 2 },
+        { text: 'Не ощущаю вообще, хотя на тренировках мне тяжело', score: 1 }
       ]
     },
     {
+      category: 'Физическое состояние',
       question: 'У меня:',
       options: [
-        'Нет одышки',
-        'Есть, но редко',
-        'Часто задыхаюсь'
-      ]
-    },
-    {
-      question: 'Я пью:',
-      options: [
-        'По ощущениям',
-        'Контролирую воду, пью свою норму в день',
-        'Не слежу за этим'
-      ]
-    },
-    {
-      question: 'Я:',
-      options: [
-        'Постоянно солю еду',
-        'Редко, когда очень пресная',
-        'Вообще не добавляю соль'
-      ]
-    },
-    {
-      question: 'Больше всего после тренировки мне хочется:',
-      options: [
-        'Жирного',
-        'Сладкого',
-        'Мучного',
-        'Молочного',
-        'Воды'
-      ]
-    },
-    {
-      question: 'После тренировки вес:',
-      options: [
-        'Стоит',
-        'Растёт',
-        'Падает'
-      ]
-    },
-    {
-      question: 'Утром вес:',
-      options: [
-        'Больше, чем вечером',
-        'Такой же',
-        'Меньше, чем вечером'
-      ]
-    },
-    {
-      question: 'Я дышу:',
-      options: [
-        'Через рот',
-        'Через нос',
-        'Обоими',
-        'Когда как'
+        { text: 'Нет одышки', score: 5 },
+        { text: 'Есть, но редко', score: 3 },
+        { text: 'Часто задыхаюсь', score: 1 }
       ]
     }
   ];
 
-  let step = 0; // этап: 0 — ввод данных, >=1 — вопросы (step-1), последний этап — результат
+  // Счётчики баллов по категориям
+  let categoryScores = {};
+  let categoryMaxScores = {};
+
+  function initCategoryScores() {
+    categoryScores = {};
+    categoryMaxScores = {};
+    questions.forEach(q => {
+      if (!categoryScores[q.category]) categoryScores[q.category] = 0;
+      if (!categoryMaxScores[q.category]) categoryMaxScores[q.category] = 0;
+      categoryMaxScores[q.category] += Math.max(...q.options.map(o => o.score));
+    });
+  }
+
+  // Этапы: 0 - ввод данных, 1..N - вопросы, N+1 - лоадбар, N+2 - результаты
+  let stage = 0;
+  let currentQuestionIndex = 0;
 
   function renderIntro() {
     app.innerHTML = `
-      <h1>Добро пожаловать в опросник MSE</h1>
-      <input id="username" type="text" placeholder="Ваше имя" autocomplete="off" />
-      <input id="contact" type="text" placeholder="Контакт (email, Telegram и т.п.)" autocomplete="off" />
+      <h2>Привет! Для начала укажи имя и контакт (например, телефон или email)</h2>
+      <input id="username" type="text" placeholder="Ваше имя" />
+      <input id="contact" type="text" placeholder="Телефон или Email" />
       <button class="btn" id="start-btn">Начать опрос</button>
     `;
+
     document.getElementById('start-btn').onclick = () => {
-      const nameVal = document.getElementById('username').value.trim();
-      const contactVal = document.getElementById('contact').value.trim();
-      if (!nameVal || !contactVal) {
-        alert('Пожалуйста, заполните имя и контакт для связи.');
+      const uname = document.getElementById('username').value.trim();
+      const cont = document.getElementById('contact').value.trim();
+      if (!uname || !cont) {
+        alert('Пожалуйста, заполните оба поля');
         return;
       }
-      username = nameVal;
-      contact = contactVal;
-      step = 1;
+      username = uname;
+      contact = cont;
+      stage = 1;
+      currentQuestionIndex = 0;
+      answers.length = 0;
+      initCategoryScores();
       renderQuestion();
     };
   }
 
   function renderQuestion() {
-    if (step > questions.length) {
-      showResultPage();
-      return;
-    }
+    const q = questions[currentQuestionIndex];
+    let optionsHtml = q.options.map((opt, i) => `
+      <button class="btn" data-index="${i}">${opt.text}</button>
+    `).join('');
 
-    const q = questions[step - 1];
     app.innerHTML = `
-      <h2>Вопрос ${step} из ${questions.length}</h2>
-      <p style="margin-bottom: 25px; font-weight: 600;">${q.question}</p>
-      <div id="options-container"></div>
+      <h3>${q.category}</h3>
+      <p><strong>Вопрос ${currentQuestionIndex + 1} из ${questions.length}:</strong> ${q.question}</p>
+      <div id="options">${optionsHtml}</div>
     `;
 
-    const container = document.getElementById('options-container');
-    q.options.forEach(option => {
-      const btn = document.createElement('button');
-      btn.className = 'btn';
-      btn.textContent = option;
+    const buttons = app.querySelectorAll('#options .btn');
+    buttons.forEach(btn => {
       btn.onclick = () => {
-        answers.push({ question: q.question, answer: option });
-        step++;
-        renderQuestion();
+        buttons.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        const answerIndex = +btn.dataset.index;
+        const score = q.options[answerIndex].score;
+        answers[currentQuestionIndex] = { ...q, answerIndex, score };
+        // Авто переход к следующему вопросу с задержкой
+        setTimeout(() => {
+          currentQuestionIndex++;
+          if (currentQuestionIndex < questions.length) {
+            renderQuestion();
+          } else {
+            stage = questions.length + 1;
+            renderLoader();
+          }
+        }, 300);
       };
-      container.appendChild(btn);
     });
   }
 
-  function showResultPage() {
+  function renderLoader() {
     app.innerHTML = `
-      <div id="result-page">
-        <h2>Ваш индивидуальный отчёт</h2>
-        <p><strong>Имя:</strong> ${username}</p>
-        <p><strong>Контакт:</strong> ${contact}</p>
-        <hr>
-        <div id="answer-list">
-          ${answers.map((a, i) => `
-            <p><strong>${i + 1}. ${a.question}</strong><br>Ответ: ${a.answer}</p>
-          `).join('')}
-        </div>
-        <button id="download-pdf-btn">Скачать PDF</button>
+      <h2>Обрабатываем результаты...</h2>
+      <div id="loader-container">
+        <div id="loader-bar"></div>
       </div>
     `;
 
-    document.getElementById('download-pdf-btn').onclick = () => {
-      const element = document.getElementById('result-page');
-      const opt = {
-        margin:       0.5,
-        filename:     `mse_report_${username.replace(/\s+/g, '_')}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, logging: false },
-        jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-      };
-      html2pdf().set(opt).from(element).save();
+    const loaderBar = document.getElementById('loader-bar');
+    let width = 0;
+    const interval = setInterval(() => {
+      width += 5 + Math.random()*10;
+      if (width >= 100) {
+        width = 100;
+        clearInterval(interval);
+        setTimeout(() => {
+          stage++;
+          renderResults();
+        }, 500);
+      }
+      loaderBar.style.width = width + '%';
+    }, 150);
+  }
+
+  function renderResults() {
+    // Считаем баллы по категориям
+    Object.keys(categoryScores).forEach(cat => categoryScores[cat] = 0);
+    answers.forEach(ans => {
+      categoryScores[ans.category] += ans.score;
+    });
+
+    let resultsHtml = `<h2>Результаты для ${username}</h2>`;
+
+    for (const cat in categoryScores) {
+      const score = categoryScores[cat];
+      const maxScore = categoryMaxScores[cat];
+      let interpretation = '';
+      if (score <= maxScore * 0.2) {
+        interpretation = 'Всё отлично!';
+      } else if (score <= maxScore * 0.7) {
+        interpretation = 'Есть над чем поработать.';
+      } else {
+        interpretation = 'Рекомендуется обратить внимание.';
+      }
+
+      resultsHtml += `
+        <div style="margin-bottom: 20px;">
+          <h3>${cat}</h3>
+          <p>Набрано баллов: <b>${score}</b> из <b>${maxScore}</b></p>
+          <p><em>${interpretation}</em></p>
+        </div>
+      `;
+    }
+
+    app.innerHTML = `
+      <div id="result-page">
+        ${resultsHtml}
+        <button id="restart-btn" class="btn">Пройти заново</button>
+      </div>
+    `;
+
+    document.getElementById('restart-btn').onclick = () => {
+      stage = 0;
+      renderIntro();
     };
   }
 
