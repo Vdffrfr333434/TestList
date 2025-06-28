@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>MSE Опросник с Категориями и Баллами</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Roboto+Slab:wght@400;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&display=swap');
 
   html, body {
-    margin:0; padding:0; height:100%;
-    background: url('https://www.transparenttextures.com/patterns/cubes.png') repeat;
-    background-color: #121212;
-    font-family: 'Montserrat', sans-serif;
+    margin: 0; padding: 0; height: 100%;
+    background: url('https://i.ibb.co/q3LCfmXh/MSE-Tabata-Plan-Alt2.png') no-repeat center center fixed;
+    background-size: cover;
+    font-family: 'IBM Plex Sans', sans-serif;
     color: #eee;
     display: flex;
     align-items: center;
@@ -20,7 +20,7 @@
   body::before {
     content: "";
     position: fixed;
-    top:0; left:0; right:0; bottom:0;
+    top: 0; left: 0; right: 0; bottom: 0;
     backdrop-filter: blur(10px);
     z-index: -1;
   }
@@ -68,7 +68,7 @@
     background-position: center;
     padding: 80px 30px 30px 30px;
     border-radius: 15px;
-    font-family: 'Roboto Slab', serif;
+    font-family: 'IBM Plex Sans', sans-serif;
     width: 90vw;
     max-width: 800px;
     color: #fff;
@@ -143,26 +143,41 @@
 
   const questions = [
     {
-      category: "Метаболизм",
-      text: "Как часто вы чувствуете упадок сил после еды?",
+      category: 'Физическое',
+      text: 'Вы чувствуете усталость по утрам?',
       options: [
-        { text: "Никогда", score: 1 },
-        { text: "Иногда", score: 2 },
-        { text: "Часто", score: 3 },
-        { text: "Всегда", score: 5 }
+        { text: 'Да, часто', score: 5 },
+        { text: 'Иногда', score: 3 },
+        { text: 'Нет', score: 1 }
       ]
     },
     {
-      category: "Когнитивные способности",
-      text: "Как часто вы сталкиваетесь с трудностями при концентрации?",
+      category: 'Эмоциональное',
+      text: 'Вы испытываете стресс на работе?',
       options: [
-        { text: "Никогда", score: 1 },
-        { text: "Редко", score: 2 },
-        { text: "Иногда", score: 3 },
-        { text: "Часто", score: 5 }
+        { text: 'Постоянно', score: 5 },
+        { text: 'Иногда', score: 3 },
+        { text: 'Редко', score: 1 }
+      ]
+    },
+    {
+      category: 'Социальное',
+      text: 'Часто ли вы встречаетесь с друзьями?',
+      options: [
+        { text: 'Редко', score: 5 },
+        { text: 'Иногда', score: 3 },
+        { text: 'Часто', score: 1 }
+      ]
+    },
+    {
+      category: 'Когнитивное',
+      text: 'Как часто вы читаете книги?',
+      options: [
+        { text: 'Редко', score: 5 },
+        { text: 'Иногда', score: 3 },
+        { text: 'Часто', score: 1 }
       ]
     }
-    // Добавьте другие вопросы по аналогии
   ];
 
   let categoryScores = {}, categoryMaxScores = {};
@@ -177,7 +192,7 @@
 
   function renderIntro() {
     app.innerHTML = `
-      <img src="https://via.placeholder.com/300x100?text=ЛОГОТИП" style="margin-bottom: 25px; max-width: 100%; border-radius: 12px;" />
+      <img src="https://i.ibb.co/r2K5tJph/MSE-Logo-420-110.png" style="margin-bottom: 25px; max-width: 100%; border-radius: 12px;" />
       <input type="text" id="username" placeholder="Имя" class="btn" />
       <input type="text" id="contact" placeholder="Контакт для связи (опц.)" class="btn" />
       <button class="btn" id="start-btn">Начать опрос</button>
@@ -205,34 +220,32 @@
   let currentQuestionIndex = 0;
   function renderQuestion() {
     const q = questions[currentQuestionIndex];
-    app.innerHTML = `
-      <h2>${q.category}</h2>
-      <h3>${q.text}</h3>
-      ${q.options.map((o, i) => `<button class="btn" onclick="answerQuestion(${i})">${o.text}</button>`).join('')}
-    `;
+    let html = `<h2>${q.category}</h2><p>${q.text}</p>`;
+    q.options.forEach((opt, i) => {
+      html += `<button class="btn" onclick="answer(${i})">${opt.text}</button>`;
+    });
+    app.innerHTML = html;
   }
 
-  window.answerQuestion = function(index) {
+  window.answer = (i) => {
     const q = questions[currentQuestionIndex];
-    answers.push({ category: q.category, score: q.options[index].score });
+    answers.push({ category: q.category, text: q.text, score: q.options[i].score });
     currentQuestionIndex++;
     if (currentQuestionIndex < questions.length) {
       renderQuestion();
     } else {
       renderLoader();
     }
-  };
+  }
 
   function renderLoader() {
-    app.innerHTML = `
-      <h2>Обработка результатов...</h2>
-      <div id="loader-container"><div id="loader-bar"></div></div>
-    `;
-    let progress = 0;
+    app.innerHTML = `<h2>Обработка результатов...</h2><div id="loader-container"><div id="loader-bar"></div></div>`;
+    let bar = document.getElementById('loader-bar');
+    let width = 0;
     const interval = setInterval(() => {
-      progress += 5;
-      document.getElementById('loader-bar').style.width = progress + '%';
-      if (progress >= 100) {
+      width += 5;
+      bar.style.width = width + '%';
+      if (width >= 100) {
         clearInterval(interval);
         renderResults();
       }
@@ -258,7 +271,7 @@
     html += `<button id="restart-btn" class="btn">Пройти заново</button>`;
     app.innerHTML = `<div id="result-page">${html}</div>`;
 
-    document.getElementById('restart-btn').onclick = () => renderIntro();
+    document.getElementById('restart-btn').onclick = () => location.reload();
     document.getElementById('download-pdf-btn').onclick = () => {
       const opt = { margin: 0.5, filename: 'результаты.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: {}, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
       html2pdf().from(document.getElementById('result-page')).set(opt).save();
