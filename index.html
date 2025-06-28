@@ -9,13 +9,11 @@
 
   html, body {
     margin: 0; padding: 0; height: 100%;
-    background: url('https://i.ibb.co/q3LCfmXh/MSE-Tabata-Plan-Alt2.png') no-repeat center center fixed;
-    background-size: contain;
+    background: url('https://i.ibb.co/67n9YYCS/MSE-Quiz-BG.png') no-repeat center center fixed;
+    background-size: cover;
     font-family: 'IBM Plex Sans', sans-serif;
     color: #eee;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    overflow-x: hidden;
   }
 
   .center {
@@ -27,6 +25,7 @@
     width: 75vw;
     text-align: center;
     user-select: none;
+    margin: 40px auto;
   }
 
   h1, h2, h3 {
@@ -51,94 +50,280 @@
     background: rgba(88,166,255,0.25);
   }
 
-  #result-page {
-    position: relative;
-    text-align: left;
-    background-image: url('https://via.placeholder.com/800x1200');
-    background-size: cover;
-    background-position: center;
-    padding: 80px 30px 30px 30px;
-    border-radius: 15px;
-    font-family: 'IBM Plex Sans', sans-serif;
-    width: 75vw;
-    max-width: 800px;
-    color: #fff;
-    margin: 0 auto;
+  #disclaimer-modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
   }
 
-  #result-page .interpret-block {
-    position: relative;
-    margin-bottom: 60px;
-    padding: 20px;
-    background: #444;
-    border-radius: 12px;
+  #disclaimer-box {
+    background: #222;
+    padding: 30px;
+    border-radius: 15px;
     border: 1px solid #58a6ff;
-  }
-
-  #result-page h2 {
+    max-width: 500px;
+    width: 80vw;
     text-align: center;
-    margin-bottom: 30px;
   }
 
-  button#download-pdf-btn {
-    display: block;
-    margin: 25px auto 0;
-    padding: 15px 30px;
-    font-size: 1rem;
+  #question-block {
+    max-width: 600px;
+    width: 75vw;
+    background: #333;
     border-radius: 15px;
+    border: 1px solid #58a6ff;
+    padding: 25px 30px;
+    margin: 40px auto;
+    user-select: none;
+  }
+
+  #question-category {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    color: #58a6ff;
+  }
+  #question-text {
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+  }
+
+  .answer-btn {
     background: rgba(255,255,255,0.05);
     border: 1px solid #58a6ff;
+    border-radius: 12px;
+    padding: 14px 20px;
+    margin: 10px 0;
+    font-size: 1rem;
     color: #eee;
     cursor: pointer;
+    text-align: center;
+    user-select: none;
+    width: 100%;
     transition: background 0.3s ease;
   }
-  button#download-pdf-btn:hover {
+  .answer-btn:hover {
     background: rgba(88,166,255,0.25);
   }
 
-  #loader-container {
-    margin-top: 30px;
-    width: 100%;
-    background: rgba(255,255,255,0.1);
-    border-radius: 10px;
-    overflow: hidden;
-    height: 20px;
+  #result-blocks {
+    max-width: 600px;
+    width: 75vw;
+    margin: 40px auto;
+    background: #333;
+    border-radius: 15px;
     border: 1px solid #58a6ff;
-  }
-  #loader-bar {
-    height: 100%;
-    width: 0%;
-    background: #4caf50;
-    transition: width 0.4s ease;
+    padding: 20px 30px;
+    color: #eee;
+    user-select: none;
   }
 
-  @media(max-width: 600px) {
-    .center {
-      width: 90vw;
-      padding: 20px;
-    }
-    #result-page {
-      width: 90vw;
-    }
-    .btn {
-      padding: 14px;
-      font-size: 1.1rem;
-    }
+  .result-category {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #58a6ff;
   }
+
+  .result-comment {
+    font-size: 1rem;
+  }
+
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 <div class="center" id="app">
   <img src="https://i.ibb.co/r2K5tJph/MSE-Logo-420-110.png" alt="Логотип MSE" style="max-width: 100%; margin-bottom: 20px;" />
   <input type="text" id="username" placeholder="Имя" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #58a6ff;" />
   <input type="text" id="contact" placeholder="Контакт для связи" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #58a6ff;" />
-  <button class="btn" id="start-btn">Начать опрос</button>
+  <button class="btn" id="start-btn">Начать тестирование</button>
 </div>
+
+<div id="disclaimer-modal" class="hidden" style="display:none;">
+  <div id="disclaimer-box">
+    <p>Данные будут обработаны с использованием искусственного интеллекта. Продолжая, вы соглашаетесь на обработку персональных данных.</p>
+    <button class="btn" id="agree-btn">Продолжить тестирование</button>
+    <button class="btn" id="cancel-btn">Отменить</button>
+  </div>
+</div>
+
+<div id="question-block" style="display:none;">
+  <div id="question-category"></div>
+  <div id="question-text"></div>
+  <div id="answers-container"></div>
+</div>
+
+<div id="result-blocks" style="display:none;">
+  <h2>Интерпретация результатов</h2>
+  <div id="results-container"></div>
+</div>
+
 <script>
-  document.getElementById('start-btn').addEventListener('click', () => {
-    alert("Данные будут обработаны с использованием искусственного интеллекта. Продолжая, вы соглашаетесь на обработку персональных данных.");
-    // переход к следующему шагу должен быть реализован здесь
+  const startBtn = document.getElementById('start-btn');
+  const disclaimerModal = document.getElementById('disclaimer-modal');
+  const agreeBtn = document.getElementById('agree-btn');
+  const cancelBtn = document.getElementById('cancel-btn');
+  const appDiv = document.getElementById('app');
+
+  const questionBlock = document.getElementById('question-block');
+  const questionCategory = document.getElementById('question-category');
+  const questionText = document.getElementById('question-text');
+  const answersContainer = document.getElementById('answers-container');
+
+  const resultBlocks = document.getElementById('result-blocks');
+  const resultsContainer = document.getElementById('results-container');
+
+  // Пример вопросов с категориями и баллами (1-5)
+  const questions = [
+    { id: 1, category: 'Метаболизм', text: 'Как вы оцениваете ваш уровень энергии?', answers: [
+      {text: 'Очень низкий', points: 1},
+      {text: 'Низкий', points: 2},
+      {text: 'Средний', points: 3},
+      {text: 'Высокий', points: 4},
+      {text: 'Очень высокий', points: 5},
+    ]},
+    { id: 2, category: 'Когнитивные способности', text: 'Как быстро вы принимаете решения?', answers: [
+      {text: 'Очень медленно', points: 1},
+      {text: 'Медленно', points: 2},
+      {text: 'Средне', points: 3},
+      {text: 'Быстро', points: 4},
+      {text: 'Очень быстро', points: 5},
+    ]},
+    { id: 3, category: 'Термогенез', text: 'Как часто вы чувствуете холод?', answers: [
+      {text: 'Очень часто', points: 1},
+      {text: 'Часто', points: 2},
+      {text: 'Иногда', points: 3},
+      {text: 'Редко', points: 4},
+      {text: 'Очень редко', points: 5},
+    ]},
+    { id: 4, category: 'Энергообмен', text: 'Как вы оцениваете свою выносливость?', answers: [
+      {text: 'Очень низкая', points: 1},
+      {text: 'Низкая', points: 2},
+      {text: 'Средняя', points: 3},
+      {text: 'Высокая', points: 4},
+      {text: 'Очень высокая', points: 5},
+    ]},
+    { id: 5, category: 'Метаболизм', text: 'Как часто вы чувствуете голод?', answers: [
+      {text: 'Очень редко', points: 5},
+      {text: 'Редко', points: 4},
+      {text: 'Иногда', points: 3},
+      {text: 'Часто', points: 2},
+      {text: 'Очень часто', points: 1},
+    ]}
+  ];
+
+  // Комментарии для интерпретации по категориям
+  const interpretation = {
+    'Метаболизм': [
+      {range: [0,5], comment: 'Низкий метаболизм — нужно увеличить активность и питание.'},
+      {range: [6,10], comment: 'Средний метаболизм — поддерживайте баланс.'},
+      {range: [11,15], comment: 'Высокий метаболизм — хороший показатель здоровья.'}
+    ],
+    'Когнитивные способности': [
+      {range: [0,5], comment: 'Низкая скорость мышления — полезны тренировки мозга.'},
+      {range: [6,10], comment: 'Средний уровень когнитивных способностей.'},
+      {range: [11,15], comment: 'Высокий уровень когнитивных способностей.'}
+    ],
+    'Термогенез': [
+      {range: [0,5], comment: 'Чувствительность к холоду высокая, стоит улучшить терморегуляцию.'},
+      {range: [6,10], comment: 'Нормальная терморегуляция.'},
+      {range: [11,15], comment: 'Отличная терморегуляция.'}
+    ],
+    'Энергообмен': [
+      {range: [0,5], comment: 'Низкая выносливость, нужна тренировка.'},
+      {range: [6,10], comment: 'Средний уровень выносливости.'},
+      {range: [11,15], comment: 'Высокая выносливость.'}
+    ]
+  };
+
+  let currentQuestionIndex = 0;
+  let scores = {}; // категория => сумма баллов
+
+  function showQuestion(index) {
+    if (index >= questions.length) {
+      showResults();
+      return;
+    }
+    const q = questions[index];
+    questionCategory.textContent = q.category;
+    questionText.textContent = q.text;
+
+    answersContainer.innerHTML = '';
+    q.answers.forEach((ans, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'answer-btn';
+      btn.textContent = ans.text;
+      btn.onclick = () => {
+        // Добавляем баллы в соответствующую категорию
+        if (!scores[q.category]) scores[q.category] = 0;
+        scores[q.category] += ans.points;
+
+        currentQuestionIndex++;
+        showQuestion(currentQuestionIndex);
+      };
+      answersContainer.appendChild(btn);
+    });
+  }
+
+  function showResults() {
+    questionBlock.style.display = 'none';
+    resultBlocks.style.display = 'block';
+    resultsContainer.innerHTML = '';
+
+    for (const category in scores) {
+      const total = scores[category];
+      // Найдем интерпретацию по диапазону
+      const interp = interpretation[category];
+      let comment = 'Комментарий не найден';
+      if (interp) {
+        for (const item of interp) {
+          if (total >= item.range[0] && total <= item.range[1]) {
+            comment = item.comment;
+            break;
+          }
+        }
+      }
+
+      const catDiv = document.createElement('div');
+      catDiv.className = 'result-category';
+      catDiv.textContent = `${category} — баллы: ${total}`;
+
+      const commDiv = document.createElement('div');
+      commDiv.className = 'result-comment';
+      commDiv.textContent = comment;
+
+      resultsContainer.appendChild(catDiv);
+      resultsContainer.appendChild(commDiv);
+    }
+  }
+
+  startBtn.addEventListener('click', () => {
+    const username = document.getElementById('username').value.trim();
+    const contact = document.getElementById('contact').value.trim();
+    if (!username || !contact) {
+      alert('Пожалуйста, заполните имя и контакт для связи');
+      return;
+    }
+    disclaimerModal.style.display = 'flex';
+  });
+
+  cancelBtn.addEventListener('click', () => {
+    disclaimerModal.style.display = 'none';
+  });
+
+  agreeBtn.addEventListener('click', () => {
+    disclaimerModal.style.display = 'none';
+    appDiv.style.display = 'none';
+    // Показываем первый вопрос
+    questionBlock.style.display = 'block';
+    currentQuestionIndex = 0;
+    scores = {};
+    showQuestion(currentQuestionIndex);
   });
 </script>
 </body>
