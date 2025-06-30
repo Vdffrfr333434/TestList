@@ -14,10 +14,11 @@
     font-family: 'IBM Plex Sans', sans-serif;
     color: #eee;
     overflow-x: hidden;
+    background-color: #000;
   }
 
-  .center, #question-block, #result-blocks, #loading-block {
-    background: #333;
+  .center {
+    background: #2c2c2c;
     border: 1px solid #58a6ff;
     border-radius: 15px;
     padding: 25px 30px;
@@ -25,9 +26,7 @@
     width: 75vw;
     text-align: center;
     user-select: none;
-    margin: calc(25vw) auto 40px auto;
-    opacity: 1;
-    transition: opacity 0.2s ease;
+    margin: 25vh auto 40px auto;
   }
 
   h1, h2, h3 {
@@ -41,429 +40,185 @@
     border-radius: 12px;
     padding: 15px;
     margin: 8px 0;
+    width: 100%;
     font-size: 1rem;
     color: #eee;
     cursor: pointer;
     transition: background 0.3s ease;
     user-select: none;
-    display: block;
-    width: 100%; /* Кнопки одинаковой ширины */
-    box-sizing: border-box;
   }
-
   .btn:hover, .btn.selected {
     background: rgba(88,166,255,0.25);
   }
 
-  #disclaimer-modal {
-    max-width: 500px;
-    margin: calc(25vw) auto 40px auto;
-    background: #222;
-    padding: 30px;
-    border-radius: 15px;
-    border: 1px solid #58a6ff;
-    text-align: center;
-    user-select: none;
-  }
+  .hidden { display: none; }
 
-  #question-block {
-    max-width: 600px;
-    width: 75vw;
-    background: #333;
-    border-radius: 15px;
-    border: 1px solid #58a6ff;
-    padding: 25px 30px;
-    margin: calc(25vw) auto 40px auto;
-    user-select: none;
-  }
-
-  #question-category {
-    font-weight: 600;
-    font-size: 1.1rem;
-    margin-bottom: 8px;
-    color: #58a6ff;
-  }
-  #question-text {
-    font-size: 1.3rem;
-    margin-bottom: 20px;
-  }
-
-  .answer-btn {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid #58a6ff;
-    border-radius: 12px;
-    padding: 14px 20px;
-    margin: 10px 0;
-    font-size: 1rem;
-    color: #eee;
-    cursor: pointer;
-    text-align: center;
-    user-select: none;
-    width: 100%;
-    box-sizing: border-box;
-    transition: background 0.3s ease;
-  }
-  .answer-btn:hover {
-    background: rgba(88,166,255,0.25);
-  }
-
-  #result-blocks {
-    max-width: 600px;
-    width: 75vw;
-    margin: calc(25vw) auto 40px auto;
-    background: #333;
-    border-radius: 15px;
-    border: 1px solid #58a6ff;
-    padding: 20px 30px;
-    color: #eee;
-    user-select: none;
-  }
-
-  .result-category {
-    font-weight: 600;
-    font-size: 1.1rem;
-    margin-top: 20px;
+  .error-message {
+    color: red;
+    font-size: 0.9rem;
+    margin-top: -8px;
     margin-bottom: 10px;
-    color: #58a6ff;
   }
 
-  .result-comment {
-    font-size: 1rem;
-    white-space: pre-wrap;
+  @media(max-width: 600px) {
+    .center {
+      width: 90vw;
+      padding: 20px;
+    }
+    .btn {
+      padding: 14px;
+      font-size: 1.1rem;
+    }
   }
-
-  #download-pdf-btn {
-    display: block;
-    margin: 30px auto 0;
-    padding: 15px 40px;
-    font-size: 1.1rem;
-    border-radius: 15px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid #58a6ff;
-    color: #eee;
-    cursor: pointer;
-    transition: background 0.3s ease;
-    width: auto;
-    min-width: 180px;
-  }
-  #download-pdf-btn:hover {
-    background: rgba(88,166,255,0.25);
-  }
-
-  /* Ошибка под формой */
-  #error-msg {
-    color: #ff6b6b;
-    margin-top: 10px;
-    font-size: 0.95rem;
-    display: none;
-    user-select: none;
-  }
-
-  /* Лоадер-переход */
-  .fade-out {
-    opacity: 0 !important;
-  }
-  .fade-in {
-    opacity: 1 !important;
-  }
-
-  /* Блок загрузки */
-  #loading-block {
-    max-width: 400px;
-    padding: 20px 30px;
-    text-align: center;
-  }
-  #loading-text {
-    font-size: 1.2rem;
-    margin-bottom: 15px;
-  }
-  #loading-bar-container {
-    background: #555;
-    border-radius: 10px;
-    height: 16px;
-    width: 100%;
-    overflow: hidden;
-  }
-  #loading-bar {
-    background: #58a6ff;
-    height: 100%;
-    width: 0;
-    border-radius: 10px;
-    transition: width 2.5s linear;
-  }
-
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
-
-<!-- Слайд 1: Ввод данных -->
-<div class="center fade-in" id="slide-1">
+<!-- Первый экран -->
+<div class="center" id="welcome-screen">
   <img src="https://i.ibb.co/r2K5tJph/MSE-Logo-420-110.png" alt="Логотип MSE" style="max-width: 100%; margin-bottom: 20px;" />
   <input type="text" id="username" placeholder="Имя" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #58a6ff;" />
+  <div id="name-error" class="error-message hidden">Пожалуйста, введите имя</div>
   <input type="text" id="contact" placeholder="Контакт для связи" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #58a6ff;" />
+  <div id="contact-error" class="error-message hidden">Пожалуйста, введите контакт</div>
   <button class="btn" id="start-btn">Начать тестирование</button>
-  <div id="error-msg"></div>
 </div>
 
-<!-- Слайд 2: Дисклеймер -->
-<div id="slide-2" class="center" style="display:none;">
-  <p>Данные будут обработаны с использованием искусственного интеллекта. Продолжая, вы соглашаетесь на обработку персональных данных.</p>
+<!-- Второй экран -->
+<div class="center hidden" id="disclaimer-screen">
+  <p style="margin-bottom: 20px;">Данные будут обработаны с использованием искусственного интеллекта. Продолжая, вы соглашаетесь на обработку персональных данных.</p>
   <button class="btn" id="agree-btn">Продолжить тестирование</button>
-  <button class="btn" id="cancel-btn">Отменить</button>
+  <button class="btn" onclick="window.location.reload()">Отменить тестирование</button>
 </div>
 
-<!-- Слайд 3: Вопросы -->
-<div id="question-block" style="display:none;">
-  <div id="question-category"></div>
+<!-- Экран вопросов -->
+<div class="center hidden" id="question-screen">
+  <h3 id="question-category"></h3>
   <div id="question-text"></div>
-  <div id="answers-container"></div>
+  <div id="answers"></div>
 </div>
 
-<!-- Слайд 3.5: Лоадер обработки -->
-<div id="loading-block" class="center" style="display:none;">
-  <div id="loading-text">Обработка данных...</div>
-  <div id="loading-bar-container">
-    <div id="loading-bar"></div>
-  </div>
+<!-- Экран результатов -->
+<div class="center hidden" id="results-screen">
+  <div id="result-blocks"></div>
+  <button class="btn" id="download-btn">Скачать PDF</button>
 </div>
 
-<!-- Слайд 4: Результаты -->
-<div id="result-blocks" style="display:none;">
-  <h2>Интерпретация результатов</h2>
-  <div id="results-container"></div>
-  <button id="download-pdf-btn">Скачать PDF</button>
-</div>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
-  const slide1 = document.getElementById('slide-1');
-  const slide2 = document.getElementById('slide-2');
-  const questionBlock = document.getElementById('question-block');
-  const loadingBlock = document.getElementById('loading-block');
-  const resultBlocks = document.getElementById('result-blocks');
+const questions = [
+  { category: 'Метаболизм', text: 'Как часто вы испытываете чувство голода?', options: [
+    { text: 'Очень редко', value: 1 },
+    { text: 'Иногда', value: 2 },
+    { text: 'Умеренно', value: 3 },
+    { text: 'Часто', value: 4 },
+    { text: 'Постоянно', value: 5 },
+  ]},
+  { category: 'Когнитивные способности', text: 'Насколько быстро вы усваиваете новую информацию?', options: [
+    { text: 'Очень медленно', value: 1 },
+    { text: 'Медленно', value: 2 },
+    { text: 'Средне', value: 3 },
+    { text: 'Быстро', value: 4 },
+    { text: 'Мгновенно', value: 5 },
+  ]}
+];
 
-  const startBtn = document.getElementById('start-btn');
-  const agreeBtn = document.getElementById('agree-btn');
-  const cancelBtn = document.getElementById('cancel-btn');
+let categories = {}; // changed from const to let
+const questionScreen = document.getElementById('question-screen');
+const resultsScreen = document.getElementById('results-screen');
+const resultBlocks = document.getElementById('result-blocks');
+let currentQuestion = 0;
 
-  const questionCategory = document.getElementById('question-category');
-  const questionText = document.getElementById('question-text');
-  const answersContainer = document.getElementById('answers-container');
+function startSurvey() {
+  currentQuestion = 0;
+  categories = {};
+  showQuestion();
+}
 
-  const resultsContainer = document.getElementById('results-container');
-  const downloadPdfBtn = document.getElementById('download-pdf-btn');
-
-  const errorMsg = document.getElementById('error-msg');
-
-  const loadingBar = document.getElementById('loading-bar');
-
-  // Вопросы и ответы
-  const questions = [
-    { id: 1, category: 'Метаболизм', text: 'Как вы оцениваете ваш уровень энергии?', answers: [
-      {text: 'Очень низкий', points: 1},
-      {text: 'Низкий', points: 2},
-      {text: 'Средний', points: 3},
-      {text: 'Высокий', points: 4},
-      {text: 'Очень высокий', points: 5},
-    ]},
-    { id: 2, category: 'Когнитивные способности', text: 'Как быстро вы принимаете решения?', answers: [
-      {text: 'Очень медленно', points: 1},
-      {text: 'Медленно', points: 2},
-      {text: 'Средне', points: 3},
-      {text: 'Быстро', points: 4},
-      {text: 'Очень быстро', points: 5},
-    ]},
-    { id: 3, category: 'Выносливость', text: 'Как вы оцениваете свою физическую выносливость?', answers: [
-      {text: 'Очень низкая', points: 1},
-      {text: 'Низкая', points: 2},
-      {text: 'Средняя', points: 3},
-      {text: 'Высокая', points: 4},
-      {text: 'Очень высокая', points: 5},
-    ]},
-  ];
-
-  const interpretation = {
-    'Метаболизм': [
-      {range: [1,2], comment: 'Низкий уровень энергии, рекомендуется консультация.'},
-      {range: [3,4], comment: 'Средний уровень энергии.'},
-      {range: [5,5], comment: 'Высокий уровень энергии.'},
-    ],
-    'Когнитивные способности': [
-      {range: [1,2], comment: 'Медленные когнитивные функции.'},
-      {range: [3,4], comment: 'Средний уровень когнитивных функций.'},
-      {range: [5,5], comment: 'Отличные когнитивные способности.'},
-    ],
-    'Выносливость': [
-      {range: [1,2], comment: 'Низкая выносливость, рекомендуются упражнения на выносливость.'},
-      {range: [3,4], comment: 'Средняя выносливость.'},
-      {range: [5,5], comment: 'Отличная выносливость.'},
-    ]
-  };
-
-  let userData = {};
-  let currentQuestionIndex = 0;
-  let scores = {};
-  let answerSelected = false;
-
-  function fadeOut(element) {
-    element.style.opacity = '0';
-  }
-  function fadeIn(element) {
-    element.style.opacity = '1';
-  }
-
-  // Показать вопрос
-  function showQuestion(idx) {
-    answerSelected = false;
-    if (idx >= questions.length) {
-      // Все вопросы отвечены - показать результаты
-      startLoadingAndShowResults();
-      return;
-    }
-    const q = questions[idx];
-    questionCategory.textContent = q.category;
-    questionText.textContent = q.text;
-    answersContainer.innerHTML = '';
-    q.answers.forEach((ans, i) => {
-      const btn = document.createElement('button');
-      btn.textContent = ans.text;
-      btn.className = 'answer-btn';
-      btn.onclick = () => {
-        if(answerSelected) return; // защита от повторного клика
-        answerSelected = true;
-        // Сохраняем очки
-        if (!scores[q.category]) scores[q.category] = 0;
-        scores[q.category] += ans.points;
-
-        // Подсветка выбранного ответа
-        Array.from(answersContainer.children).forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-
-        // Переход к следующему вопросу с анимацией
-        setTimeout(() => {
-          fadeOut(questionBlock);
-          setTimeout(() => {
-            currentQuestionIndex++;
-            showQuestion(currentQuestionIndex);
-            fadeIn(questionBlock);
-          }, 200);
-        }, 300);
-      };
-      answersContainer.appendChild(btn);
-    });
-  }
-
-  // Проверка имени и контакта
-  function validateUserData() {
-    const username = document.getElementById('username').value.trim();
-    const contact = document.getElementById('contact').value.trim();
-    if (!username || !contact) {
-      errorMsg.style.display = 'block';
-      errorMsg.textContent = 'Пожалуйста, заполните оба поля.';
-      return false;
-    }
-    errorMsg.style.display = 'none';
-    userData = { username, contact };
-    return true;
-  }
-
-  startBtn.onclick = () => {
-    if (!validateUserData()) return;
-    fadeOut(slide1);
-    setTimeout(() => {
-      slide1.style.display = 'none';
-      slide2.style.display = 'block';
-      fadeIn(slide2);
-    }, 200);
-  };
-
-  cancelBtn.onclick = () => {
-    fadeOut(slide2);
-    setTimeout(() => {
-      slide2.style.display = 'none';
-      slide1.style.display = 'block';
-      fadeIn(slide1);
-    }, 200);
-  };
-
-  agreeBtn.onclick = () => {
-    fadeOut(slide2);
-    setTimeout(() => {
-      slide2.style.display = 'none';
-      questionBlock.style.display = 'block';
-      currentQuestionIndex = 0;
-      scores = {};
-      showQuestion(currentQuestionIndex);
-      fadeIn(questionBlock);
-    }, 200);
-  };
-
-  // Лоадер и вывод результатов
-  function startLoadingAndShowResults() {
-    fadeOut(questionBlock);
-    setTimeout(() => {
-      questionBlock.style.display = 'none';
-      loadingBlock.style.display = 'block';
-      fadeIn(loadingBlock);
-
-      loadingBar.style.width = '0%';
-      setTimeout(() => {
-        loadingBar.style.transition = 'width 2.5s linear';
-        loadingBar.style.width = '100%';
-      }, 50);
-
-      setTimeout(() => {
-        fadeOut(loadingBlock);
-        setTimeout(() => {
-          loadingBlock.style.display = 'none';
-          showResults();
-          resultBlocks.style.display = 'block';
-          fadeIn(resultBlocks);
-        }, 200);
-      }, 2600);
-    }, 200);
-  }
-
-  function showResults() {
-    resultsContainer.innerHTML = '';
-    for (const cat in scores) {
-      const catScore = scores[cat];
-      const catInterps = interpretation[cat];
-      let comment = '';
-      if (catInterps) {
-        for (const interp of catInterps) {
-          if (catScore >= interp.range[0] && catScore <= interp.range[1]) {
-            comment = interp.comment;
-            break;
-          }
-        }
+function showQuestion() {
+  const q = questions[currentQuestion];
+  document.getElementById('question-category').textContent = q.category;
+  document.getElementById('question-text').textContent = q.text;
+  const answersDiv = document.getElementById('answers');
+  answersDiv.innerHTML = '';
+  q.options.forEach((opt, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.textContent = opt.text;
+    btn.onclick = () => {
+      if (!categories[q.category]) categories[q.category] = 0;
+      categories[q.category] += opt.value;
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        showQuestion();
+      } else {
+        showResults();
       }
-      const divCat = document.createElement('div');
-      divCat.className = 'result-category';
-      divCat.textContent = cat;
-      const divComment = document.createElement('div');
-      divComment.className = 'result-comment';
-      divComment.textContent = comment;
-      resultsContainer.appendChild(divCat);
-      resultsContainer.appendChild(divComment);
-    }
-  }
-
-  // Скачать PDF, без кнопки в самом PDF
-  downloadPdfBtn.addEventListener('click', () => {
-    downloadPdfBtn.style.display = 'none';
-    const element = document.getElementById('result-blocks');
-    html2pdf().from(element).set({
-      margin: 0.5,
-      filename: 'MSE_results.pdf',
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-    }).save().finally(() => {
-      downloadPdfBtn.style.display = 'block';
-    });
+    };
+    answersDiv.appendChild(btn);
   });
+}
 
+function showResults() {
+  questionScreen.classList.add('hidden');
+  resultsScreen.classList.remove('hidden');
+  resultBlocks.innerHTML = '';
+
+  for (const cat in categories) {
+    let comment = '';
+    const score = categories[cat];
+    if (score <= 2) comment = 'Всё хорошо';
+    else comment = 'Есть отклонения';
+
+    const div = document.createElement('div');
+    div.style.marginBottom = '20px';
+    div.textContent = `${cat}: ${comment}`;
+    resultBlocks.appendChild(div);
+  }
+}
+
+const startBtn = document.getElementById('start-btn');
+const welcomeScreen = document.getElementById('welcome-screen');
+const disclaimerScreen = document.getElementById('disclaimer-screen');
+const agreeBtn = document.getElementById('agree-btn');
+const nameInput = document.getElementById('username');
+const contactInput = document.getElementById('contact');
+const nameError = document.getElementById('name-error');
+const contactError = document.getElementById('contact-error');
+
+startBtn.addEventListener('click', () => {
+  let valid = true;
+  nameError.classList.add('hidden');
+  contactError.classList.add('hidden');
+
+  if (!nameInput.value.trim()) {
+    nameError.classList.remove('hidden');
+    valid = false;
+  }
+  if (!contactInput.value.trim()) {
+    contactError.classList.remove('hidden');
+    valid = false;
+  }
+  if (valid) {
+    welcomeScreen.classList.add('hidden');
+    disclaimerScreen.classList.remove('hidden');
+  }
+});
+
+agreeBtn.addEventListener('click', () => {
+  disclaimerScreen.classList.add('hidden');
+  questionScreen.classList.remove('hidden');
+  startSurvey();
+});
+
+document.getElementById('download-btn').addEventListener('click', () => {
+  const element = document.getElementById('result-blocks');
+  html2pdf().from(element).set({
+    margin: 0.5,
+    filename: 'MSE_results.pdf',
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+  }).save();
+});
 </script>
-
 </body>
 </html>
