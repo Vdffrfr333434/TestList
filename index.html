@@ -114,12 +114,16 @@
 <!-- Первый экран -->
 <div class="center" id="welcome-screen">
   <img src="https://i.ibb.co/r2K5tJph/MSE-Logo-420-110.png" alt="Логотип MSE" style="max-width: 100%; margin-bottom: 20px;" />
-  <input type="text" id="username" placeholder="Имя" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #58a6ff;" />
+  
+  <input type="text" id="username" class="input-field" placeholder="Имя" />
   <div id="name-error" class="error-message hidden">Пожалуйста, введите имя</div>
-  <input type="text" id="contact" placeholder="Контакт для связи" style="width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #58a6ff;" />
+  
+  <input type="text" id="contact" class="input-field" placeholder="Контакт для связи" />
   <div id="contact-error" class="error-message hidden">Пожалуйста, введите контакт</div>
+  
   <button class="btn" id="start-btn">Начать тестирование</button>
 </div>
+
 
 <!-- Второй экран -->
 <div class="center hidden" id="disclaimer-screen">
