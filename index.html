@@ -33,6 +33,21 @@
       text-align: center;
     }
 
+    #result-blocks div.category-title {
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin-bottom: 6px;
+  color: #eee;
+}
+
+#result-blocks div.category-comment {
+  font-weight: 400;
+  font-size: 1rem;
+  margin-bottom: 15px;
+  color: #ccc;
+}
+
+
     .full-width-btn {
       width: 100%;
       max-width: 400px;
@@ -370,18 +385,44 @@ function showQuestion() {
 function showResults() {
   resultsScreen.classList.remove('hidden');
   resultBlocks.innerHTML = '';
+
+  // Генерируем рандомный ID (6 цифр)
+  const randomId = Math.floor(100000 + Math.random() * 900000);
+
+  // Получаем имя пользователя
+  const username = nameInput.value.trim() || 'Пользователь';
+
+  // Текущая дата и время
+  const now = new Date();
+  const dateStr = now.toLocaleString('ru-RU', { dateStyle: 'medium', timeStyle: 'short' });
+
+  // Вставляем в шапку
+  document.getElementById('user-info').textContent = `Результаты тестирования для ${username} (ID: ${randomId}) — ${dateStr}`;
+
+  // Выводим результаты по категориям
   for (const cat in categories) {
-    let comment = '';
     const score = categories[cat];
-    if (score <= 2) comment = 'Всё хорошо';
+    let comment = '';
+
+    // Логика комментариев (пример, можно настроить)
+    if (score <= 5) comment = 'Всё хорошо';
     else comment = 'Есть отклонения';
 
-    const div = document.createElement('div');
-    div.style.marginBottom = '20px';
-    div.textContent = `${cat}: ${comment}`;
-    resultBlocks.appendChild(div);
+    // Создаем заголовок категории
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'category-title';
+    titleDiv.textContent = cat;
+
+    // Создаем комментарий
+    const commentDiv = document.createElement('div');
+    commentDiv.className = 'category-comment';
+    commentDiv.textContent = comment;
+
+    resultBlocks.appendChild(titleDiv);
+    resultBlocks.appendChild(commentDiv);
   }
 }
+
 
 const startBtn = document.getElementById('start-btn');
 const welcomeScreen = document.getElementById('welcome-screen');
