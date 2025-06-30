@@ -16,25 +16,26 @@
     overflow-x: hidden;
     background-color: #000;
   }
-  
+
   .input-field {
-  display: block;
-  width: 100%;
-  max-width: 400px;
-  margin: 10px auto;
-  padding: 12px;
-  background-color: #1e1e1e;
-  color: #eee;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-family: inherit;
-  font-size: 1rem;
-  box-sizing: border-box;
-}
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    margin: 10px auto;
+    padding: 12px;
+    background-color: #1e1e1e;
+    color: #eee;
+    border: 1px solid #444;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 1rem;
+    box-sizing: border-box;
+    text-align: center;
+  }
 
   .center {
     background: #2c2c2c;
-    border: 1px solid #ccc;
+    border: 1px solid #444;
     border-radius: 4px;
     padding: 25px 30px;
     max-width: 300px;
@@ -45,7 +46,7 @@
     opacity: 0;
     transform: translateY(20px);
     animation: fadeIn 250ms ease-out forwards;
-    line-height: 1.3;
+    line-height: 1.2;
   }
 
   @keyframes fadeIn {
@@ -62,7 +63,7 @@
 
   .btn {
     background: rgba(255,255,255,0.05);
-    border: 1px solid #ccc;
+    border: 1px solid #555;
     border-radius: 4px;
     padding: 15px;
     margin: 8px auto;
@@ -70,22 +71,13 @@
     font-size: 1rem;
     color: #eee;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: background 0.25s ease;
     user-select: none;
     display: block;
   }
 
   .btn:hover, .btn.selected {
     background: rgba(255,255,255,0.1);
-  }
-
-  input[type="text"] {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    font-size: 1rem;
   }
 
   .error-message {
@@ -114,16 +106,15 @@
 <!-- Первый экран -->
 <div class="center" id="welcome-screen">
   <img src="https://i.ibb.co/r2K5tJph/MSE-Logo-420-110.png" alt="Логотип MSE" style="max-width: 100%; margin-bottom: 20px;" />
-  
+
   <input type="text" id="username" class="input-field" placeholder="Имя" />
   <div id="name-error" class="error-message hidden">Пожалуйста, введите имя</div>
-  
+
   <input type="text" id="contact" class="input-field" placeholder="Контакт для связи" />
   <div id="contact-error" class="error-message hidden">Пожалуйста, введите контакт</div>
-  
+
   <button class="btn" id="start-btn">Начать тестирование</button>
 </div>
-
 
 <!-- Второй экран -->
 <div class="center hidden" id="disclaimer-screen">
@@ -137,6 +128,11 @@
   <h3 id="question-category"></h3>
   <div id="question-text"></div>
   <div id="answers"></div>
+</div>
+
+<!-- Лоадер -->
+<div class="center hidden" id="loader-screen">
+  <p>Обработка результатов...</p>
 </div>
 
 <!-- Экран результатов -->
@@ -164,8 +160,9 @@ const questions = [
   ]}
 ];
 
-let categories = {}; // changed from const to let
+let categories = {};
 const questionScreen = document.getElementById('question-screen');
+const loaderScreen = document.getElementById('loader-screen');
 const resultsScreen = document.getElementById('results-screen');
 const resultBlocks = document.getElementById('result-blocks');
 let currentQuestion = 0;
@@ -182,7 +179,7 @@ function showQuestion() {
   document.getElementById('question-text').textContent = q.text;
   const answersDiv = document.getElementById('answers');
   answersDiv.innerHTML = '';
-  q.options.forEach((opt, idx) => {
+  q.options.forEach((opt) => {
     const btn = document.createElement('button');
     btn.className = 'btn';
     btn.textContent = opt.text;
@@ -193,7 +190,12 @@ function showQuestion() {
       if (currentQuestion < questions.length) {
         showQuestion();
       } else {
-        showResults();
+        questionScreen.classList.add('hidden');
+        loaderScreen.classList.remove('hidden');
+        setTimeout(() => {
+          loaderScreen.classList.add('hidden');
+          showResults();
+        }, 1000);
       }
     };
     answersDiv.appendChild(btn);
@@ -201,10 +203,8 @@ function showQuestion() {
 }
 
 function showResults() {
-  questionScreen.classList.add('hidden');
   resultsScreen.classList.remove('hidden');
   resultBlocks.innerHTML = '';
-
   for (const cat in categories) {
     let comment = '';
     const score = categories[cat];
