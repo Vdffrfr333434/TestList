@@ -19,14 +19,24 @@
 
   .center {
     background: #2c2c2c;
-    border: 1px solid #58a6ff;
-    border-radius: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
     padding: 25px 30px;
-    max-width: 500px;
-    width: 75vw;
+    max-width: 800px;
+    width: 65vw;
     text-align: center;
     user-select: none;
     margin: 25vh auto 40px auto;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeIn 250ms ease-out forwards;
+  }
+
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   h1, h2, h3 {
@@ -36,22 +46,31 @@
 
   .btn {
     background: rgba(255,255,255,0.05);
-    border: 1px solid #58a6ff;
-    border-radius: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
     padding: 15px;
-    margin: 8px 0;
-    width: 100%;
+    margin: 8px auto;
+    width: 55%;
     font-size: 1rem;
     color: #eee;
     cursor: pointer;
     transition: background 0.3s ease;
     user-select: none;
-  }
-  .btn:hover, .btn.selected {
-    background: rgba(88,166,255,0.25);
+    display: block;
   }
 
-  .hidden { display: none; }
+  .btn:hover, .btn.selected {
+    background: rgba(255,255,255,0.1);
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+  }
 
   .error-message {
     color: red;
@@ -60,14 +79,17 @@
     margin-bottom: 10px;
   }
 
+  .hidden {
+    display: none;
+  }
+
   @media(max-width: 600px) {
     .center {
       width: 90vw;
       padding: 20px;
     }
     .btn {
-      padding: 14px;
-      font-size: 1.1rem;
+      width: 80%;
     }
   }
 </style>
