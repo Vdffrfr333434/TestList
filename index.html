@@ -257,18 +257,29 @@ agreeBtn.addEventListener('click', () => {
 
 document.getElementById('download-btn').addEventListener('click', () => {
   const resultArea = document.getElementById('results-screen');
+  const button = document.getElementById('download-btn');
 
-  html2canvas(resultArea, {
-    scale: 2,
-    useCORS: true,
-    backgroundColor: null
-  }).then(canvas => {
-    const link = document.createElement('a');
-    link.download = 'mse_result.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-  });
+  // Временно скрываем кнопку
+  button.style.visibility = 'hidden';
+
+  // Даём браузеру время применить скрытие
+  setTimeout(() => {
+    html2canvas(resultArea, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: null
+    }).then(canvas => {
+      // Возвращаем кнопку
+      button.style.visibility = 'visible';
+
+      const link = document.createElement('a');
+      link.download = 'mse_result.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+  }, 100); // небольшая задержка для гарантированного скрытия
 });
+
 
 </script>
 </body>
