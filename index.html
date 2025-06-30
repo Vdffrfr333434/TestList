@@ -167,6 +167,33 @@
 </div>
 
 <script>
+  const commentsByCategory = {
+  "Метаболизм": [
+    { maxScore: 10, text: "Всё отлично с вашим метаболизмом." },
+    { maxScore: 20, text: "Есть некоторые небольшие отклонения." },
+    { maxScore: Infinity, text: "Рекомендуется обратить внимание на метаболизм." }
+  ],
+  "Энергообмен": [
+    { maxScore: 5, text: "Уровень энергообмена в норме." },
+    { maxScore: 10, text: "Наблюдаются признаки усталости." },
+    { maxScore: Infinity, text: "Возможна хроническая усталость." }
+  ],
+  "Термоненез": [
+    { maxScore: 10, text: "Терморегуляция работает хорошо." },
+    { maxScore: 15, text: "Есть некоторые дискомфорты при температурных изменениях." },
+    { maxScore: Infinity, text: "Обратите внимание на терморегуляцию." }
+  ],
+  "Реактивность ЦНС": [
+    { maxScore: 10, text: "Нервная система в хорошем состоянии." },
+    { maxScore: 15, text: "Наблюдаются некоторые нервные реакции." },
+    { maxScore: Infinity, text: "Возможно, нервная система перегружена." }
+  ],
+  "Адаптивность": [
+    { maxScore: 10, text: "Высокая адаптивность организма." },
+    { maxScore: 15, text: "Адаптивность средняя." },
+    { maxScore: Infinity, text: "Адаптация организма снижена." }
+  ],
+};
 const questions = [
   // Метаболизм
   { category: 'Метаболизм', text: 'Сразу после пробуждения я:', options: [
@@ -386,34 +413,25 @@ function showResults() {
   resultsScreen.classList.remove('hidden');
   resultBlocks.innerHTML = '';
 
-  // Генерируем рандомный ID (6 цифр)
-  const randomId = Math.floor(100000 + Math.random() * 900000);
-
-  // Получаем имя пользователя
-  const username = nameInput.value.trim() || 'Пользователь';
-
-  // Текущая дата и время
-  const now = new Date();
-  const dateStr = now.toLocaleString('ru-RU', { dateStyle: 'medium', timeStyle: 'short' });
-
-  // Вставляем в шапку
-  document.getElementById('user-info').textContent = `Результаты тестирования для ${username} (ID: ${randomId}) — ${dateStr}`;
-
-  // Выводим результаты по категориям
   for (const cat in categories) {
     const score = categories[cat];
     let comment = '';
 
-    // Логика комментариев (пример, можно настроить)
-    if (score <= 5) comment = 'Всё хорошо';
-    else comment = 'Обнаружена угроза. В ходе анализа ответов была выявлена контролируемая биологическая опасность для организма. В данный момент она развивается, но  не несёт особой угрозы и изменения могут быть обратимы: в течение 6 месяцев (18%), в течение 12 месяцев (72%), в течение 14 месяцев (93%).';
+    if (commentsByCategory[cat]) {
+      for (const item of commentsByCategory[cat]) {
+        if (score <= item.maxScore) {
+          comment = item.text;
+          break;
+        }
+      }
+    } else {
+      comment = 'Комментарий не найден для этой категории.';
+    }
 
-    // Создаем заголовок категории
     const titleDiv = document.createElement('div');
     titleDiv.className = 'category-title';
     titleDiv.textContent = cat;
 
-    // Создаем комментарий
     const commentDiv = document.createElement('div');
     commentDiv.className = 'category-comment';
     commentDiv.textContent = comment;
@@ -422,7 +440,6 @@ function showResults() {
     resultBlocks.appendChild(commentDiv);
   }
 }
-
 
 const startBtn = document.getElementById('start-btn');
 const welcomeScreen = document.getElementById('welcome-screen');
