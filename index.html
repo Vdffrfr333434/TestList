@@ -188,6 +188,13 @@
 </div>
 
 <script>
+
+  let userName = "";
+  let userId = "";
+
+  function generateTestId() {
+    return 'TST-' + Math.floor(100000 + Math.random()*900000);
+  }
   const commentsByCategory = {
   "Метаболизм": [
     { maxScore: 10, text: "Обнаружена комплексная биологическая угроза. В ходе диагностики было выявлено системное прогрессирующее нарушение, которое имеет неконтролируемую тенденцию к развитию. Процесс может быть остановлен через 4 месяца (2%), 9 месяцев (11%), 11 месяцев (55%), 16 месяцев (83%) и полностью обратим в течение 6 месяцев (25%), 8 месяцев (77%), 14 месяцев (97%)." },
@@ -443,9 +450,20 @@ function showQuestion() {
   });
 }
 
-function showResults() {
-  resultsScreen.classList.remove('hidden');
-  resultBlocks.innerHTML = '';
+ function showResults() {
+    resultsScreen.classList.remove('hidden');
+    resultBlocks.innerHTML = '';
+
+    // 🚀 Вставляем имя, ID, дату/время/день недели
+    const now = new Date();
+    const dtStr = now.toLocaleString('ru-RU', { dateStyle: 'full', timeStyle: 'short' });
+    const weekday = now.toLocaleDateString('ru-RU', { weekday: 'long' });
+    document.getElementById('user-info').innerHTML = `
+      <p><strong>Имя:</strong> ${userName}</p>
+      <p><strong>ID тестирования:</strong> ${userId}</p>
+      <p><strong>Дата и время:</strong> ${dtStr}</p>
+      <p><strong>День недели:</strong> ${weekday.charAt(0).toUpperCase() + weekday.slice(1)}</p>
+    `;
 
   for (const cat in categories) {
     const score = categories[cat];
@@ -484,24 +502,26 @@ const contactInput = document.getElementById('contact');
 const nameError = document.getElementById('name-error');
 const contactError = document.getElementById('contact-error');
 
-startBtn.addEventListener('click', () => {
-  let valid = true;
-  nameError.classList.add('hidden');
-  contactError.classList.add('hidden');
+ startBtn.addEventListener('click', () => {
+    let valid = true;
+    nameError.classList.add('hidden');
+    contactError.classList.add('hidden');
 
-  if (!nameInput.value.trim()) {
-    nameError.classList.remove('hidden');
-    valid = false;
-  }
-  if (!contactInput.value.trim()) {
-    contactError.classList.remove('hidden');
-    valid = false;
-  }
-  if (valid) {
-    welcomeScreen.classList.add('hidden');
-    disclaimerScreen.classList.remove('hidden');
-  }
-});
+    if (!nameInput.value.trim()) {
+      nameError.classList.remove('hidden');
+      valid = false;
+    }
+    if (!contactInput.value.trim()) {
+      contactError.classList.remove('hidden');
+      valid = false;
+    }
+    if (valid) {
+      userName = nameInput.value.trim();     // Сохраняем имя
+      userId = generateTestId();            // Генерируем ID
+      welcomeScreen.classList.add('hidden');
+      disclaimerScreen.classList.remove('hidden');
+    }
+  });
 
 agreeBtn.addEventListener('click', () => {
   disclaimerScreen.classList.add('hidden');
