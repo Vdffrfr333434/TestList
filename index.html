@@ -124,6 +124,8 @@
     }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 </head>
 <body>
 
@@ -480,6 +482,7 @@ document.getElementById('download-btn').addEventListener('click', () => {
   const button = document.getElementById('download-btn');
 
   button.style.visibility = 'hidden';
+
   setTimeout(() => {
     html2canvas(resultArea, {
       scale: 2,
@@ -488,10 +491,16 @@ document.getElementById('download-btn').addEventListener('click', () => {
     }).then(canvas => {
       button.style.visibility = 'visible';
 
-      const link = document.createElement('a');
-      link.download = 'mse_result.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
+      const imgData = canvas.toDataURL('image/png');
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save('mse_result.pdf');
     });
   }, 100);
 });
