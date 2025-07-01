@@ -17,6 +17,22 @@
       background-color: #000;
     }
 
+    .progress-bar {
+  width: 80%;
+  height: 12px;
+  background-color: #2a2a2a;
+  border-radius: 6px;
+  margin: 10px auto 0;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0;
+  background-color: #00c8ff;
+  transition: width 0.1s linear;
+}
+
     .input-field {
       display: block;
       width: 100%;
@@ -155,6 +171,9 @@
 
 <div class="center hidden" id="loader-screen">
   <p>♺ Обработка результатов...</p>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress-fill"></div>
+  </div>
 </div>
 
 <div class="center hidden" id="results-screen">
@@ -398,14 +417,27 @@ function showQuestion() {
       currentQuestion++;
       if (currentQuestion < questions.length) {
         showQuestion();
-      } else {
-        questionScreen.classList.add('hidden');
-        loaderScreen.classList.remove('hidden');
-        setTimeout(() => {
-          loaderScreen.classList.add('hidden');
-          showResults();
-        }, 1000);
-      }
+     } else {
+  questionScreen.classList.add('hidden');
+  loaderScreen.classList.remove('hidden');
+  const fill = document.getElementById('progress-fill');
+
+  const total = Math.random() * 4000 + 3000; // от 3000 до 7000 мc
+  let elapsed = 0;
+  const interval = 100; // обновляем каждые 100ms
+
+  const timer = setInterval(() => {
+    elapsed += interval;
+    const pct = Math.min(elapsed / total * 100, 100);
+    fill.style.width = pct + '%';
+
+    if (elapsed >= total) {
+      clearInterval(timer);
+      loaderScreen.classList.add('hidden');
+      showResults();
+    }
+  }, interval);
+}
     };
     answersDiv.appendChild(btn);
   });
