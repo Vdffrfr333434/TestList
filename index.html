@@ -184,6 +184,14 @@
 </div>
   
   <div id="result-blocks"></div>
+  
+  <div id="user-info" class="user-info">
+  <p><strong>Имя:</strong> <span id="display-name">...</span></p>
+  <p><strong>ID тестирования:</strong> <span id="display-id">...</span></p>
+  <p><strong>Дата и время:</strong> <span id="display-datetime">...</span></p>
+  <p><strong>День недели:</strong> <span id="display-day">...</span></p>
+</div>
+  
   <button class="btn full-width-btn" id="download-btn"> ♺ Загрузить результаты</button>
 </div>
 
@@ -443,6 +451,19 @@ function showQuestion() {
   });
 }
 
+
+
+document.getElementById("display-name").textContent = userName;
+document.getElementById("display-id").textContent = userId;
+
+const now = new Date();
+const datetimeStr = now.toLocaleString();
+const weekday = now.toLocaleDateString("ru-RU", { weekday: "long" });
+
+document.getElementById("display-datetime").textContent = datetimeStr;
+document.getElementById("display-day").textContent = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+
+  
 function showResults() {
   resultsScreen.classList.remove('hidden');
   resultBlocks.innerHTML = '';
