@@ -184,14 +184,6 @@
 </div>
   
   <div id="result-blocks"></div>
-  
-  <div id="user-info" class="user-info">
-  <p><strong>Имя:</strong> <span id="display-name">...</span></p>
-  <p><strong>ID тестирования:</strong> <span id="display-id">...</span></p>
-  <p><strong>Дата и время:</strong> <span id="display-datetime">...</span></p>
-  <p><strong>День недели:</strong> <span id="display-day">...</span></p>
-</div>
-  
   <button class="btn full-width-btn" id="download-btn"> ♺ Загрузить результаты</button>
 </div>
 
@@ -402,6 +394,12 @@ const loaderScreen = document.getElementById('loader-screen');
 const resultsScreen = document.getElementById('results-screen');
 const resultBlocks = document.getElementById('result-blocks');
 let currentQuestion = 0;
+let userName = "";
+let userId = "";
+
+function generateTestId() {
+  return 'TST-' + Math.floor(100000 + Math.random() * 900000);
+}
 
 function startSurvey() {
   currentQuestion = 0;
@@ -451,21 +449,19 @@ function showQuestion() {
   });
 }
 
-
-
-document.getElementById("display-name").textContent = userName;
-document.getElementById("display-id").textContent = userId;
-
-const now = new Date();
-const datetimeStr = now.toLocaleString();
-const weekday = now.toLocaleDateString("ru-RU", { weekday: "long" });
-
-document.getElementById("display-datetime").textContent = datetimeStr;
-document.getElementById("display-day").textContent = weekday.charAt(0).toUpperCase() + weekday.slice(1);
-
-  
 function showResults() {
   resultsScreen.classList.remove('hidden');
+  const now = new Date();
+const datetimeStr = now.toLocaleString("ru-RU", { dateStyle: 'full', timeStyle: 'short' });
+const weekday = now.toLocaleDateString("ru-RU", { weekday: 'long' });
+
+document.getElementById("user-info").innerHTML = `
+  <p><strong>Имя:</strong> ${userName}</p>
+  <p><strong>ID тестирования:</strong> ${userId}</p>
+  <p><strong>Дата и время:</strong> ${datetimeStr}</p>
+  <p><strong>День недели:</strong> ${weekday.charAt(0).toUpperCase() + weekday.slice(1)}</p>
+`;
+
   resultBlocks.innerHTML = '';
 
   for (const cat in categories) {
@@ -518,10 +514,12 @@ startBtn.addEventListener('click', () => {
     contactError.classList.remove('hidden');
     valid = false;
   }
-  if (valid) {
-    welcomeScreen.classList.add('hidden');
-    disclaimerScreen.classList.remove('hidden');
-  }
+ if (valid) {
+  userName = nameInput.value.trim();
+  userId = generateTestId();
+  welcomeScreen.classList.add('hidden');
+  disclaimerScreen.classList.remove('hidden');
+}
 });
 
 agreeBtn.addEventListener('click', () => {
