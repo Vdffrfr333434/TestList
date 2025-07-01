@@ -459,11 +459,10 @@ function showQuestion() {
     const dtStr = now.toLocaleString('ru-RU', { dateStyle: 'full', timeStyle: 'short' });
     const weekday = now.toLocaleDateString('ru-RU', { weekday: 'long' });
     document.getElementById('user-info').innerHTML = `
-      <p><strong>Имя:</strong> ${userName}</p>
-      <p><strong>ID тестирования:</strong> ${userId}</p>
-      <p><strong>Дата и время:</strong> ${dtStr}</p>
-      <p><strong>День недели:</strong> ${weekday.charAt(0).toUpperCase() + weekday.slice(1)}</p>
-    `;
+      <strong>Имя:</strong> ${userName}
+     <strong>ID тестирования:</strong> ${userId}
+    <p><strong>Дата и время:</strong> ${dtStr}, ${weekday.charAt(0).toUpperCase() + weekday.slice(1)}</p>
+         `;
 
   for (const cat in categories) {
     const score = categories[cat];
