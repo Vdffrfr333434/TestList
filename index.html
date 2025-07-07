@@ -566,46 +566,61 @@ document.getElementById('download-btn').addEventListener('click', () => {
   const resultArea = document.getElementById('results-screen');
   const button = document.getElementById('download-btn');
 
-  // 🔽 Создаём и вставляем изображение печати
-  let seal = document.getElementById('seal-image');
-  let newSeal = false;
+  button.style.visibility = 'hidden';
 
+  // 🔽 Создаём и вставляем изображение печати, если его ещё нет
+  let seal = document.getElementById('seal-image');
   if (!seal) {
     seal = document.createElement('img');
     seal.id = 'seal-image';
     seal.src = 'https://github.com/Vdffrfr333434/TestList/blob/main/Seal2.png?raw=true';
-    seal.style.maxWidth = '300px';
+    seal.style.width = '30vw'; // или '120px', или '50%', как нужно
+    seal.style.height = 'auto';
     seal.style.margin = '20px auto 0';
     seal.style.display = 'block';
     resultArea.appendChild(seal);
-    newSeal = true;
   } else {
     seal.style.display = 'block';
   }
 
-  button.style.visibility = 'hidden';
+  // 🔄 Ждём, пока изображение полностью загрузится
+  if (!seal.complete) {
+    seal.onload = () => captureWithCanvas();
+  } else {
+    captureWithCanvas();
+  }
 
-  // 🔄 Ожидаем загрузку изображения, затем делаем скрин
-  const renderPDF = () => {
+  function captureWithCanvas() {
     setTimeout(() => {
       html2canvas(resultArea, {
         scale: 2,
         useCORS: true,
         backgroundColor: '#000000'
       }).then(canvas => {
+        // 🔁 Убираем печать обратно
+        seal.style.display = 'none';
         button.style.visibility = 'visible';
 
         const ctx = canvas.getContext('2d');
-        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imgData.data;
-        for (let i = 0; i < data.length; i += 4) {
-          data[i] = 255 - data[i];         // R
-          data[i + 1] = 255 - data[i + 1]; // G
-          data[i + 2] = 255 - data[i + 2]; // B
-        }
-        ctx.putImageData(imgData, 0, 0);
 
-        const imgDataURL = canvas.toDataURL('image/png');
+     
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        const contrastFactor = 2;
+        const factor = (259 * (contrastFactor * 255 + 255)) / (255 * (259 - contrastFactor * 255));
+        for (let i = 0; i < data.length; i += 4) {
+          data[i] = truncate(factor * (data[i] - 128) + 128);
+          data[i + 1] = truncate(factor * (data[i + 1] - 128) + 128);
+          data[i + 2] = truncate(factor * (data[i + 2] - 128) + 128);
+        }
+        ctx.putImageData(imageData, 0, 0);
+
+        function truncate(v) {
+          return Math.max(0, Math.min(255, v));
+        }
+        
+
+        const imgData = canvas.toDataURL('image/png');
         const { jsPDF } = window.jspdf;
         const pdf = new jsPDF({
           orientation: 'portrait',
@@ -613,20 +628,10 @@ document.getElementById('download-btn').addEventListener('click', () => {
           format: [canvas.width, canvas.height]
         });
 
-        pdf.addImage(imgDataURL, 'PNG', 0, 0, canvas.width, canvas.height);
+        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
         pdf.save('mse_result.pdf');
-
-        // Удаляем печать
-        seal.style.display = 'none';
       });
-    }, 100);
-  };
-
-  // 🔽 Если изображение только что добавлено — ждём, пока оно загрузится
-  if (newSeal && !seal.complete) {
-    seal.onload = renderPDF;
-  } else {
-    renderPDF();
+    }, 100); // чуть-чуть ждём, чтобы изображение точно отобразилось
   }
 });
 
