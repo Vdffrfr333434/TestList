@@ -479,9 +479,8 @@ function showQuestion() {
     const dtStr = now.toLocaleString('ru-RU', { dateStyle: 'full', timeStyle: 'short' });
     const weekday = now.toLocaleDateString('ru-RU', { weekday: 'long' });
     document.getElementById('user-info').innerHTML = `
-      <strong>Имя:</strong> ${userName}
-     <strong>ID тестирования:</strong> ${userId}
-    <p><strong>Дата и время:</strong> ${dtStr}</p>
+      <strong>▌ Имя:</strong> ${userName} (ID тестирования ${userId})
+    <p><strong>▌ Дата и время:</strong> ${dtStr}</p>
          `;
 
   for (const cat in categories) {
