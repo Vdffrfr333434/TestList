@@ -584,13 +584,13 @@ document.getElementById('download-btn').addEventListener('click', () => {
 
   setTimeout(() => {
     html2canvas(resultArea, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#000000'
-    }).then(canvas => {
-      button.style.visibility = 'visible';
+  scale: 2,
+  useCORS: true,
+  backgroundColor: '#000000'
+}).then(canvas => {
+  button.style.visibility = 'visible';
 
-      // 🔄 Инвертируем изображение на canvas
+  // 🔄 Инвертируем изображение на canvas
   const ctx = canvas.getContext('2d');
   const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const data = imgData.data;
@@ -602,21 +602,17 @@ document.getElementById('download-btn').addEventListener('click', () => {
   }
   ctx.putImageData(imgData, 0, 0);
 
-      const imgData = canvas.toDataURL('image/png');
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'px',
-        format: [canvas.width, canvas.height]
-      });
+  // Далее идёт код сохранения PDF:
+  const imgDataURL = canvas.toDataURL('image/png');
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({
+    orientation: 'portrait',
+    unit: 'px',
+    format: [canvas.width, canvas.height]
+  });
 
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-      pdf.save('mse_result.pdf');
-
-      // 🔽 Удаляем печать после генерации
-      seal.style.display = 'none';
-    });
-  }, 100);
+  pdf.addImage(imgDataURL, 'PNG', 0, 0, canvas.width, canvas.height);
+  pdf.save('mse_result.pdf');
 });
 </script>
 </body>
