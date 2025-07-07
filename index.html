@@ -590,6 +590,18 @@ document.getElementById('download-btn').addEventListener('click', () => {
     }).then(canvas => {
       button.style.visibility = 'visible';
 
+      // 🔄 Инвертируем изображение на canvas
+  const ctx = canvas.getContext('2d');
+  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imgData.data;
+  for (let i = 0; i < data.length; i += 4) {
+    data[i] = 255 - data[i];         // R
+    data[i + 1] = 255 - data[i + 1]; // G
+    data[i + 2] = 255 - data[i + 2]; // B
+    // Alpha не трогаем
+  }
+  ctx.putImageData(imgData, 0, 0);
+
       const imgData = canvas.toDataURL('image/png');
       const { jsPDF } = window.jspdf;
       const pdf = new jsPDF({
