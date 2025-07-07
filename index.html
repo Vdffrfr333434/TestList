@@ -567,6 +567,20 @@ document.getElementById('download-btn').addEventListener('click', () => {
   const resultArea = document.getElementById('results-screen');
   const button = document.getElementById('download-btn');
 
+  // 🔽 Создаём и вставляем изображение печати
+  let seal = document.getElementById('seal-image');
+  if (!seal) {
+    seal = document.createElement('img');
+    seal.id = 'seal-image';
+    seal.src = 'https://raw.githubusercontent.com/Vdffrfr333434/TestList/refs/heads/main/1675354894_grizly-club-p-oplacheno-klipart-3.png';
+    seal.style.maxWidth = '120px';
+    seal.style.margin = '20px auto 0';
+    seal.style.display = 'block';
+    resultArea.appendChild(seal);
+  } else {
+    seal.style.display = 'block';
+  }
+
   button.style.visibility = 'hidden';
 
   setTimeout(() => {
@@ -587,6 +601,9 @@ document.getElementById('download-btn').addEventListener('click', () => {
 
       pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
       pdf.save('mse_result.pdf');
+
+      // 🔽 Удаляем печать после генерации
+      seal.style.display = 'none';
     });
   }, 100);
 });
