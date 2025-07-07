@@ -76,7 +76,14 @@
 #start-btn {
   width: 100%;
 }
-
+ #disagree-btn {
+  width: 100%;
+}
+  
+ #agree-btn {
+  width: 100%;
+}
+  
     .full-width-btn {
       width: 100%;
       max-width: 400px;
@@ -173,7 +180,7 @@
 <div class="center hidden" id="disclaimer-screen">
   <p style="margin-bottom: 20px;">▌ Этот распределительный диагностический тест был разработан медиками и инженерами проекта MSE для оценки состояния организма новых участников и определения возможных нарушений, которые уже имеются. <br> <br>▌ Данные из этого тестирования будут обработаны совершенным искусственным интеллектом под контролем оператора. <br><br>▌ Продолжая, вы соглашаетесь на обработку персональных данных и обучение нейросетевой модели "София".</p>
   <button class="btn" id="agree-btn">Продолжить тестирование</button>
-  <button class="btn" onclick="window.location.reload()">Отменить тестирование</button>
+  <button class="btn" id="disagree-btn" onclick="window.location.reload()">Отменить тестирование</button>
 </div>
 
 <div class="center hidden" id="question-screen">
