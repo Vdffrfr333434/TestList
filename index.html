@@ -568,6 +568,8 @@ document.getElementById('download-btn').addEventListener('click', () => {
 
   // 🔽 Создаём и вставляем изображение печати
   let seal = document.getElementById('seal-image');
+  let newSeal = false;
+
   if (!seal) {
     seal = document.createElement('img');
     seal.id = 'seal-image';
@@ -576,36 +578,58 @@ document.getElementById('download-btn').addEventListener('click', () => {
     seal.style.margin = '20px auto 0';
     seal.style.display = 'block';
     resultArea.appendChild(seal);
+    newSeal = true;
   } else {
     seal.style.display = 'block';
   }
 
   button.style.visibility = 'hidden';
 
-  setTimeout(() => {
-    html2canvas(resultArea, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#000000'
-    }).then(canvas => {
-      button.style.visibility = 'visible';
+  // 🔄 Ожидаем загрузку изображения, затем делаем скрин
+  const renderPDF = () => {
+    setTimeout(() => {
+      html2canvas(resultArea, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#000000'
+      }).then(canvas => {
+        button.style.visibility = 'visible';
 
-      const imgData = canvas.toDataURL('image/png');
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'px',
-        format: [canvas.width, canvas.height]
+        const ctx = canvas.getContext('2d');
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imgData.data;
+        for (let i = 0; i < data.length; i += 4) {
+          data[i] = 255 - data[i];         // R
+          data[i + 1] = 255 - data[i + 1]; // G
+          data[i + 2] = 255 - data[i + 2]; // B
+        }
+        ctx.putImageData(imgData, 0, 0);
+
+        const imgDataURL = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'px',
+          format: [canvas.width, canvas.height]
+        });
+
+        pdf.addImage(imgDataURL, 'PNG', 0, 0, canvas.width, canvas.height);
+        pdf.save('mse_result.pdf');
+
+        // Удаляем печать
+        seal.style.display = 'none';
       });
+    }, 100);
+  };
 
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-      pdf.save('mse_result.pdf');
-
-      // 🔽 Удаляем печать после генерации
-      seal.style.display = 'none';
-    });
-  }, 100);
+  // 🔽 Если изображение только что добавлено — ждём, пока оно загрузится
+  if (newSeal && !seal.complete) {
+    seal.onload = renderPDF;
+  } else {
+    renderPDF();
+  }
 });
+
 </script>
 </body>
 </html>
