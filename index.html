@@ -418,8 +418,10 @@ function showQuestion() {
   const questionIndexInCategory = categoryQuestions.findIndex(qItem => qItem === q) + 1;
 
   const totalInCategory = categoryQuestions.length;
-document.getElementById('question-category').textContent = '▌ ' + q.category;
-document.getElementById('question-text').textContent = '▌ ' + q.text + ` [${currentQuestion + 1}/${totalQ}]`;
+ document.getElementById('question-category').textContent =
+    `▌ ${q.category} [${questionIndexInCategory}/${totalInCategory}]`;
+
+  document.getElementById('question-text').textContent = '▌ ' + q.text;
   const answersDiv = document.getElementById('answers');
   answersDiv.innerHTML = '';
   q.options.forEach((opt) => {
