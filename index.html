@@ -410,7 +410,14 @@ function startSurvey() {
 
 function showQuestion() {
   const q = questions[currentQuestion];
-const totalQ = questions.length;
+
+  // Фильтруем все вопросы текущей категории
+  const categoryQuestions = questions.filter(qItem => qItem.category === q.category);
+
+  // Находим индекс текущего вопроса среди таких же категорий
+  const questionIndexInCategory = categoryQuestions.findIndex(qItem => qItem === q) + 1;
+
+  const totalInCategory = categoryQuestions.length;
 document.getElementById('question-category').textContent = '▌ ' + q.category;
 document.getElementById('question-text').textContent = '▌ ' + q.text + ` [${currentQuestion + 1}/${totalQ}]`;
   const answersDiv = document.getElementById('answers');
