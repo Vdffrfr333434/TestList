@@ -410,8 +410,8 @@ function startSurvey() {
 
 function showQuestion() {
   const q = questions[currentQuestion];
-  document.getElementById('question-category').textContent = q.category;
-  document.getElementById('question-text').textContent = q.text;
+  document.getElementById("question-category").textContent = "▌ " + currentQuestion.category;
+document.getElementById("question-text").textContent = "▌ " + currentQuestion.text + ` [${currentIndex + 1}/${questions.length}]`;
   const answersDiv = document.getElementById('answers');
   answersDiv.innerHTML = '';
   q.options.forEach((opt) => {
