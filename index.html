@@ -18,7 +18,7 @@
     }
 
     .progress-bar {
-  width: 80%;
+  width: 70%;
   height: 12px;
   background-color: #2a2a2a;
   border-radius: 3px;
@@ -182,7 +182,7 @@
 </div>
 
 <div class="center hidden" id="disclaimer-screen">
-<h3>Лицензионное соглашение</h3>
+<h3>Пользовательское соглашение </h3>
   <p style="margin-bottom: 20px;">▌ Этот распределительный диагностический тест был разработан медиками и инженерами проекта MSE для оценки состояния организма новых участников и определения возможных нарушений, которые уже имеются. <br> <br>▌ Данные из этого тестирования будут обработаны совершенным искусственным интеллектом "MSE-София" под контролем оператора. <br><br>▌ Продолжая, вы соглашаетесь на обработку персональных данных и обучение нейросетевой модели.</p>
   <button class="btn" id="agree-btn">Продолжить тестирование</button>
   <button class="btn" id="disagree-btn" onclick="window.location.reload()">Отменить тестирование</button>
@@ -572,7 +572,7 @@ document.getElementById('download-btn').addEventListener('click', () => {
     html2canvas(resultArea, {
       scale: 2,
       useCORS: true,
-      backgroundColor: '#000d1a'
+      backgroundColor: '#000000'
     }).then(canvas => {
       button.style.visibility = 'visible';
 
