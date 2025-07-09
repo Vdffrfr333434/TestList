@@ -568,61 +568,73 @@ document.getElementById('download-btn').addEventListener('click', () => {
 
   button.style.visibility = 'hidden';
 
-  // 🔽 Печать
+  // 🔽 Создаём и вставляем печать, если ещё не вставлена
   let seal = document.getElementById('seal-image');
   if (!seal) {
     seal = document.createElement('img');
     seal.id = 'seal-image';
-    seal.src = 'https://github.com/Vdffrfr333434/TestList/blob/main/Seal2.png?raw=true';
-    seal.style.position = 'absolute';
+    seal.src = 'https://github.com/Vdffrfr333434/TestList/blob/main/32323Seal2.png?raw=true';
     seal.style.width = '120px';
-    seal.style.height = 'auto';
-    seal.style.display = 'none';
-    seal.style.pointerEvents = 'none';
-    seal.style.zIndex = '1000';
-    document.body.appendChild(seal);
+    seal.style.margin = '20px auto 0';
+    seal.style.display = 'block';
+
+    // Контейнер-обёртка для выравнивания по центру
+    const sealWrapper = document.createElement('div');
+    sealWrapper.id = 'seal-wrapper';
+    sealWrapper.style.textAlign = 'center';
+    sealWrapper.appendChild(seal);
+    resultArea.appendChild(sealWrapper);
+  } else {
+    seal.style.display = 'block';
+    document.getElementById('seal-wrapper').style.display = 'block';
   }
 
-  const rect = button.getBoundingClientRect();
-  seal.style.left = `${rect.left + window.scrollX}px`;
-  seal.style.top = `${rect.top + window.scrollY}px`;
-  seal.style.display = 'block';
+  // 🔄 Дождаться загрузки изображения перед рендером
+  if (!seal.complete) {
+    seal.onload = () => generatePDF();
+  } else {
+    generatePDF();
+  }
 
-  setTimeout(() => {
-    html2canvas(resultArea, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#000000',
-    }).then(canvas => {
-      const ctx = canvas.getContext('2d');
-      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const data = imgData.data;
+  function generatePDF() {
+    setTimeout(() => {
+      html2canvas(resultArea, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#000000'
+      }).then(canvas => {
+        // 🔄 Инверсия
+        const ctx = canvas.getContext('2d');
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+        for (let i = 0; i < data.length; i += 4) {
+          data[i] = 255 - data[i];     // R
+          data[i + 1] = 255 - data[i + 1]; // G
+          data[i + 2] = 255 - data[i + 2]; // B
+        }
+        ctx.putImageData(imageData, 0, 0);
 
-      for (let i = 0; i < data.length; i += 4) {
-        data[i] = 255 - data[i];     // R
-        data[i + 1] = 255 - data[i + 1]; // G
-        data[i + 2] = 255 - data[i + 2]; // B
-      }
+        // 📄 Генерация PDF
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'px',
+          format: [canvas.width, canvas.height]
+        });
 
-      ctx.putImageData(imgData, 0, 0);
+        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+        pdf.save('mse_result.pdf');
 
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'px',
-        format: [canvas.width, canvas.height]
+        // 🔁 Очистка
+        seal.style.display = 'none';
+        document.getElementById('seal-wrapper').style.display = 'none';
+        button.style.visibility = 'visible';
       });
-
-      const imgOut = canvas.toDataURL('image/png');
-      pdf.addImage(imgOut, 'PNG', 0, 0, canvas.width, canvas.height);
-      pdf.save('mse_result.pdf');
-
-      // 🔁 Очистка
-      seal.style.display = 'none';
-      button.style.visibility = 'visible';
-    });
-  }, 150);
+    }, 200); // Дать браузеру отрисовать DOM
+  }
 });
+
 
 </script>
 </body>
