@@ -581,24 +581,35 @@ document.getElementById('download-btn').addEventListener('click', () => {
   // Скрываем кнопку
   button.style.display = 'none';
 
-  // Создаём печать, если ещё нет
-  let seal = document.getElementById('seal-image');
-  if (!seal) {
-    seal = document.createElement('img');
+  // Проверяем, есть ли уже ссылка с печатью
+  let sealLink = document.getElementById('seal-link');
+  if (!sealLink) {
+    // Создаём ссылку
+    sealLink = document.createElement('a');
+    sealLink.href = 'https://t.me/MSE_Manager';
+    sealLink.target = '_blank';
+    sealLink.id = 'seal-link';
+    sealLink.style.display = 'none'; // покажем позже
+
+    // Создаём изображение печати
+    const seal = document.createElement('img');
     seal.id = 'seal-image';
     seal.src = 'https://github.com/Vdffrfr333434/TestList/blob/main/SealW3.png?raw=true';
-    seal.style.display = 'none'; // покажем после onload
     seal.style.width = '300px';
     seal.style.margin = '20px auto';
-    resultArea.appendChild(seal);
+    seal.style.display = 'block';
 
-    // Ждём загрузки изображения
+    // Вставляем картинку внутрь ссылки
+    sealLink.appendChild(seal);
+    resultArea.appendChild(sealLink);
+
+    // Ждём загрузки картинки
     seal.onload = () => {
-      seal.style.display = 'block';
-      setTimeout(() => capturePDF(), 300); // дайте немного времени отрисоваться
+      sealLink.style.display = 'block';
+      setTimeout(() => capturePDF(), 300);
     };
   } else {
-    seal.style.display = 'block';
+    sealLink.style.display = 'block';
     setTimeout(() => capturePDF(), 300);
   }
 
@@ -633,6 +644,7 @@ document.getElementById('download-btn').addEventListener('click', () => {
     });
   }
 });
+
 
 </script>
 </body>
