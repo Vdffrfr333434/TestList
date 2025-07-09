@@ -568,40 +568,67 @@ document.getElementById('download-btn').addEventListener('click', () => {
 
   button.style.visibility = 'hidden';
 
-  // 🔄 Непосредственно вызываем захват без печати
-  captureWithCanvas();
+  // 🔽 Создаём печать-изображение (скрытое, позиционируется как кнопка)
+  let seal = document.getElementById('seal-image');
+  if (!seal) {
+    seal = document.createElement('img');
+    seal.id = 'seal-image';
+    seal.src = 'https://github.com/Vdffrfr333434/TestList/blob/main/32323Seal2.png?raw=true';
 
-  function captureWithCanvas() {
-    setTimeout(() => {
-      html2canvas(resultArea, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#000000'
-      }).then(canvas => {
-        button.style.visibility = 'visible';
+    seal.style.position = 'absolute';
+    seal.style.width = '120px';
+    seal.style.height = 'auto';
+    seal.style.display = 'none'; // не отображать в обычном интерфейсе
+    seal.style.pointerEvents = 'none';
+    seal.style.zIndex = '1000';
 
-        const ctx = canvas.getContext('2d');
-
-       
-        function truncate(v) {
-          return Math.max(0, Math.min(255, v));
-        }     
-
-        const imgData = canvas.toDataURL('image/png');
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF({
-          orientation: 'portrait',
-          unit: 'px',
-          format: [canvas.width, canvas.height]
-        });
-
-        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-        pdf.save('mse_result.pdf');
-      });
-    }, 100);
+    document.body.appendChild(seal);
   }
-});
 
+  // 📌 Получаем координаты кнопки — сюда поставим печать
+  const rect = button.getBoundingClientRect();
+  seal.style.left = `${rect.left + window.scrollX}px`;
+  seal.style.top = `${rect.top + window.scrollY}px`;
+  seal.style.display = 'block'; // только сейчас показываем (для скриншота)
+
+  // 🕒 Ждём отрисовки DOM с печатью
+  setTimeout(() => {
+    html2canvas(resultArea, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#000000',
+    }).then(canvas => {
+      // 🔄 Инверсия
+      const ctx = canvas.getContext('2d');
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imgData.data;
+
+      for (let i = 0; i < data.length; i += 4) {
+        data[i] = 255 - data[i];     // R
+        data[i + 1] = 255 - data[i + 1]; // G
+        data[i + 2] = 255 - data[i + 2]; // B
+      }
+
+      ctx.putImageData(imgData, 0, 0);
+
+      // 🧾 Генерируем PDF
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save('mse_result.pdf');
+
+      // 🔁 Убираем печать и возвращаем кнопку
+      seal.style.display = 'none';
+      button.style.visibility = 'visible';
+    });
+  }, 150);
+});
 
 </script>
 </body>
