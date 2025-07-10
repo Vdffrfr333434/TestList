@@ -219,11 +219,7 @@
   <img src="https://i.ibb.co/r2K5tJph/MSE-Logo-420-110.png" alt="Логотип MSE" style="max-width: 100%; height: 60px; margin-bottom: 10px;" />
   <div id="user-info" style="color: #eee; font-size: 0.9rem; text-align: left; margin-bottom: 10px;"></div>
 </div>
-
-  <div id="result-code" style="margin-top: 20px; text-align: center; font-family: monospace; display: none;">
-  Код результата: <span id="code-text"></span>
-</div>
-
+  
   <div id="result-blocks"></div>
   <button class="btn full-width-btn" id="download-btn">  ❱ Загрузить результаты [PDF] ⬇</button>
 </div>
@@ -577,25 +573,6 @@ agreeBtn.addEventListener('click', () => {
   questionScreen.classList.remove('hidden');
   startSurvey();
 });
-
-
-
-// Пример результата — вы можете вставить сюда свои реальные данные
-const resultData = {
-  score: finalScore,             // переменная с баллами
-  answers: selectedAnswers       // массив выбранных ответов
-};
-
-// Кодируем в JSON → base64
-const encoded = btoa(JSON.stringify(resultData));
-
-// Показываем код внизу страницы
-document.getElementById('code-text').textContent = encoded;
-document.getElementById('result-code').style.display = 'block';
-
-
-
-  
 
 document.getElementById('download-btn').addEventListener('click', () => {
   const resultArea = document.getElementById('results-screen');
