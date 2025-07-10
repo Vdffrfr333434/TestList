@@ -592,12 +592,20 @@ document.getElementById('download-btn').addEventListener('click', () => {
     sealLink.style.display = 'none'; // покажем позже
 
     // Создаём изображение печати
-    const seal = document.createElement('img');
-    seal.id = 'seal-image';
-    seal.src = 'https://github.com/Vdffrfr333434/TestList/blob/main/Seal%203%20Grey.png?raw=true';
-    seal.style.width = '325px';
-    seal.style.margin = '20px auto';
-    seal.style.display = 'block';
+const seal = document.createElement('img');
+seal.id = 'seal-image';
+seal.src = 'https://github.com/Vdffrfr333434/TestList/blob/main/Seal%203%20Grey.png?raw=true';
+seal.style.width = '325px';
+seal.style.margin = '20px auto';
+seal.style.display = 'inline-block'; // меняем с block на inline-block для центрирования
+
+// Создаём обёртку и центрируем
+const sealWrapper = document.createElement('div');
+sealWrapper.style.textAlign = 'center';
+sealWrapper.appendChild(seal);
+
+// Добавляем обёртку в results-screen или другой нужный контейнер
+document.getElementById('results-screen').appendChild(sealWrapper);
 
     // Вставляем картинку внутрь ссылки
     sealLink.appendChild(seal);
